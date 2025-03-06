@@ -18,6 +18,8 @@ class JenisResource extends Resource
     protected static ?string $model = Jenis::class;
     
     protected static ?string $navigationGroup = 'Master Data Barang';
+    protected static ?int $navigationSort = 2; // Sesuaikan angka untuk mengatur urutan
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
