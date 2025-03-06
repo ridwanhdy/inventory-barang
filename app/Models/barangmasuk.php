@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class barangmasuk extends Model
 {
-    protected $fillable = ['barang_id', 'jumlah_masuk', 'tanggal_masuk'];
+    protected $fillable = ['barang_id', 'satuan_id','jumlah_masuk', 'tanggal_masuk'];
 
     public static function boot()
     {
@@ -25,5 +25,10 @@ class barangmasuk extends Model
     public function barang()
     {
         return $this->belongsTo(Barang::class);
+    }
+
+    public function satuan()
+    {
+        return $this->belongsTo(Satuan::class);
     }
 }

@@ -44,6 +44,11 @@ class BarangMasukResource extends Resource
                     ->label('Jumlah Masuk')
                     ->numeric()
                     ->required(),
+                
+                Select::make('satuan_id')
+                ->label('Satuan')
+                ->relationship('satuan', 'nama_satuan')
+                ->required(),
 
                 DatePicker::make('tanggal_masuk')
                     ->label('Tanggal Masuk')
@@ -57,6 +62,7 @@ class BarangMasukResource extends Resource
             ->columns([
                 TextColumn::make('barang.nama_barang')->label('Barang'),
                 TextColumn::make('jumlah_masuk')->label('Jumlah Masuk'),
+                TextColumn::make('satuan.nama_satuan')->label('Satuan'),
                 TextColumn::make('tanggal_masuk')->label('Tanggal Masuk')->date(),
             ])
             ->filters([
