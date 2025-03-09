@@ -20,10 +20,12 @@ class BarangResource extends Resource
 
     protected static ?string $navigationGroup = 'Master Data Barang';
 
+    protected static ?string $navigationLabel = 'Barang';
+
     protected static ?int $navigationSort = 1; 
 
 
-    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
@@ -42,6 +44,13 @@ class BarangResource extends Resource
                 ->searchable()
                 ->preload()
                 ->required(),
+                Forms\Components\Select::make('kategori')
+    ->label('Kategori')
+    ->options([
+        'Bahan Baku' => 'Bahan Baku',
+        'Barang Jadi' => 'Barang Jadi',
+    ])
+    ->required(),
                 Forms\Components\TextInput::make('stok')->numeric()->disabled(),
                 Forms\Components\TextInput::make('stok_minimum')->numeric()->minValue(0)->required(),
             ]);
@@ -59,6 +68,7 @@ class BarangResource extends Resource
                     'success' => fn ($record) => $record->stok > $record->stok_minimum, // Hijau
                 ]),
                 Tables\Columns\TextColumn::make('satuan.nama_satuan')->label('Satuan'),
+                Tables\Columns\TextColumn::make('kategori')->label('Kategori'),
             ])
             ->filters([
                 //

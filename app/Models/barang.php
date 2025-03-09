@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class barang extends Model
 {
-    protected $fillable = ['nama_barang', 'jenis_id', 'satuan_id', 'stok', 'stok_minimum'];
+    protected $fillable = ['nama_barang', 'jenis_id', 'satuan_id', 'stok', 'stok_minimum', 'kategori'];
 
     public function jenis()
     {
@@ -17,4 +17,8 @@ class barang extends Model
     {
         return $this->belongsTo(Satuan::class);
     }
+    protected $casts = [
+        'stok' => 'float',
+        'stok_minimum' => 'float',
+    ];
 }

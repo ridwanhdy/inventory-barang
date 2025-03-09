@@ -18,6 +18,8 @@ class SatuanResource extends Resource
     protected static ?string $model = Satuan::class;
 
     protected static ?string $navigationGroup = 'Master Data Barang';
+
+    protected static ?string $navigationLabel = 'Satuan';
     protected static ?int $navigationSort = 3; // Sesuaikan angka untuk mengatur urutan
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';

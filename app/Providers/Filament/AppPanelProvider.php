@@ -55,6 +55,7 @@ class AppPanelProvider extends PanelProvider
             ])->navigationGroups([
                 'Master Data Barang',
                 'Manajemen Stok',
+                'Manajemen Produksi'
             ]);
     }
 }

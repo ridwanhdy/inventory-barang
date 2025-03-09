@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('satuan_id')->constrained('satuans')->cascadeOnDelete();
             $table->integer('stok')->unsigned()->nullable();
             $table->integer('stok_minimum')->unsigned()->nullable()->default(0);
+            $table->enum('kategori', ['Bahan Baku', 'Barang Jadi']); // Tambahkan kategori
             $table->timestamps();
         });
     }

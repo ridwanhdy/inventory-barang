@@ -23,6 +23,6 @@ class StatsOverview extends BaseWidget
             ->description('3% increase')
             ->descriptionIcon('heroicon-m-arrow-trending-up')
             ->color('success'),
-        ];
+        ]; 
     }
 }

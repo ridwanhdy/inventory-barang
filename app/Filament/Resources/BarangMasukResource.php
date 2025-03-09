@@ -18,12 +18,16 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Placeholder;
+
 
 class BarangMasukResource extends Resource
 {
     protected static ?string $model = BarangMasuk::class;
 
     protected static ?string $navigationGroup = 'Manajemen Stok';
+
+    protected static ?string $navigationLabel = 'Barang Masuk';
 
     protected static ?int $navigationSort = 4; // Sesuaikan angka untuk mengatur urutan
 
@@ -35,20 +39,20 @@ class BarangMasukResource extends Resource
         return $form
             ->schema([
                 Select::make('barang_id')
-                    ->label('Barang')
-                    ->options(Barang::pluck('nama_barang', 'id'))
-                    ->searchable()
-                    ->required(),
+    ->label('Barang')
+    ->options(Barang::where('kategori', 'Bahan Baku')->pluck('nama_barang', 'id'))
+    ->searchable()
+    ->required()
+    ->live(),
 
                 TextInput::make('jumlah_masuk')
                     ->label('Jumlah Masuk')
                     ->numeric()
                     ->required(),
                 
-                Select::make('satuan_id')
-                ->label('Satuan')
-                ->relationship('satuan', 'nama_satuan')
-                ->required(),
+                    Placeholder::make('satuan_id')
+                    ->label('Satuan')
+                    ->content(fn ($get) => Barang::find($get('barang_id'))?->satuan->nama_satuan ?? '-'),
 
                 DatePicker::make('tanggal_masuk')
                     ->label('Tanggal Masuk')
@@ -62,7 +66,6 @@ class BarangMasukResource extends Resource
             ->columns([
                 TextColumn::make('barang.nama_barang')->label('Barang'),
                 TextColumn::make('jumlah_masuk')->label('Jumlah Masuk'),
-                TextColumn::make('satuan.nama_satuan')->label('Satuan'),
                 TextColumn::make('tanggal_masuk')->label('Tanggal Masuk')->date(),
             ])
             ->filters([
