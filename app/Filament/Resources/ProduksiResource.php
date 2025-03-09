@@ -101,22 +101,51 @@ class ProduksiResource extends Resource
     }
 
     public static function mutateFormDataBeforeSave(array $data, $record): array
-    {
-        // Cek apakah status berubah dari selain "Selesai" menjadi "Selesai"
-        if ($data['status'] === 'Selesai' && $record->status !== 'Selesai') {
-            // Ambil barang jadi berdasarkan ID
-            $barangJadi = Barang::find($data['nama_barang_id']);
-    
-            // Pastikan barang ditemukan sebelum menambah stok
-            if ($barangJadi) {
-                $barangJadi->stok += (int) $data['jumlah_produksi'];
-                $barangJadi->save();
-            }
-        }
-    
-        return $data;
+{
+    // Hitungan kebutuhan bahan baku per unit produksi
+    $kainPerKaos = 0.25; // 0.25 kg kain per kaos
+    $benangPerKaos = 0.12; // 0.12 lusin benang per kaos
+
+    // Ambil jumlah produksi yang diinput
+    $jumlahProduksi = (float) $data['jumlah_produksi'];
+
+    // Hitung total bahan baku yang dibutuhkan
+    $kebutuhanKain = $jumlahProduksi * $kainPerKaos;
+    $kebutuhanBenang = $jumlahProduksi * $benangPerKaos;
+
+    // Ambil data bahan baku
+    $bahanBaku1 = Barang::find($data['bahan_baku_1_id']);
+    $bahanBaku2 = Barang::find($data['bahan_baku_2_id']);
+
+    if (!$bahanBaku1 || !$bahanBaku2) {
+        throw new \Exception('Bahan baku tidak ditemukan!');
     }
-    
+
+    // Cek apakah stok cukup sebelum mengurangi
+    if ($bahanBaku1->stok < $kebutuhanKain || $bahanBaku2->stok < $kebutuhanBenang) {
+        throw new \Exception('Stok bahan baku tidak mencukupi!');
+    }
+
+    // Jika produksi baru dibuat atau diedit, kurangi stok bahan baku
+    if (!$record->exists || $data['status'] !== $record->status) {
+        $bahanBaku1->stok -= $kebutuhanKain; // Kurangi kain
+        $bahanBaku2->stok -= $kebutuhanBenang; // Kurangi benang
+        $bahanBaku1->save();
+        $bahanBaku2->save();
+    }
+
+    // Jika status berubah menjadi "Selesai" dan sebelumnya belum selesai, tambahkan stok barang jadi
+    if ($data['status'] === 'Selesai' && $record->status !== 'Selesai') {
+        $barangJadi = Barang::find($data['nama_barang_id']);
+
+        if ($barangJadi) {
+            $barangJadi->stok += $jumlahProduksi;
+            $barangJadi->save();
+        }
+    }
+
+    return $data;
+}
 
 
 
