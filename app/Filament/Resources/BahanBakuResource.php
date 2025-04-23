@@ -20,6 +20,13 @@ class BahanBakuResource extends Resource
 {
     protected static ?string $model = BahanBaku::class;
 
+    protected static ?string $navigationGroup = 'Manajemen Bahan';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'Bahan Baku';
+
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -46,6 +53,8 @@ class BahanBakuResource extends Resource
                 Select::make('jenis_id')
                     ->label('Jenis')
                     ->relationship('jenis', 'nama_jenis')
+                    ->default(1) // Bisa diganti sesuai dengan ID jenis default yang diinginkan
+                    ->disabled()
                     ->required(),
 
                 // Input untuk stok
