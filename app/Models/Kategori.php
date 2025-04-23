@@ -14,4 +14,9 @@ class Kategori extends Model
     {
         return $this->hasMany(BahanBaku::class);
     }
+
+    public function product()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
