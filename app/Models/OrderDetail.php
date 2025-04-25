@@ -11,6 +11,7 @@ class OrderDetail extends Model
         'product_id',
         'quantity',
         'harga',
+        'subtotal',
     ];
 
     public function order()
@@ -30,6 +31,11 @@ class OrderDetail extends Model
             if (!$orderDetail->order_id) {
                 throw new \Exception('Order ID is required for order detail');
             }
+        });
+
+        static::saving(function ($orderDetail) {
+            // Calculate subtotal when saving
+            $orderDetail->subtotal = $orderDetail->quantity * $orderDetail->harga;
         });
     }
 } 

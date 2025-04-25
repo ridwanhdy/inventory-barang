@@ -9,10 +9,16 @@ class Order extends Model
     protected $fillable = [
         'customer_id',
         'users_id',
+        'tanggal_order',
         'status_transaksi',
         'status_pembayaran',
         'metode_pembayaran',
-        'tanggal_order',
+        'subtotal',
+        'total_harga',
+    ];
+
+    protected $casts = [
+        'tanggal_order' => 'date',
     ];
 
     public function customer()
@@ -47,6 +53,11 @@ class Order extends Model
             $order->status_transaksi = $order->status_transaksi ?? 'proses';
             $order->status_pembayaran = $order->status_pembayaran ?? 'belum_bayar';
             $order->tanggal_order = $order->tanggal_order ?? now();
+        });
+
+        static::saving(function ($order) {
+            // Calculate total bayar from order details
+            $order->total_harga = $order->orderDetails->sum('subtotal');
         });
     }
 }

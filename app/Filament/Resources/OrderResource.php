@@ -51,11 +51,22 @@ class OrderResource extends Resource
                             ->required()
                             ->label('Product')
                             ->live()
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                                 if ($state) {
                                     $product = \App\Models\Product::find($state);
                                     if ($product) {
                                         $set('harga', $product->harga_jual);
+                                        // Update subtotal when product changes
+                                        $quantity = $get('quantity');
+                                        if ($quantity) {
+                                            $set('subtotal', $quantity * $product->harga_jual);
+                                            // Update total immediately
+                                            $orderDetails = $get('../../orderDetails');
+                                            if ($orderDetails) {
+                                                $total = collect($orderDetails)->sum('subtotal');
+                                                $set('../../total_harga', $total);
+                                            }
+                                        }
                                     }
                                 }
                             }),
@@ -64,20 +75,85 @@ class OrderResource extends Resource
                             ->numeric()
                             ->required()
                             ->minValue(1)
-                            ->label('Quantity'),
+                            ->label('Quantity')
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                $harga = $get('harga');
+                                if ($state && $harga) {
+                                    $set('subtotal', $state * $harga);
+                                    // Update total immediately
+                                    $orderDetails = $get('../../orderDetails');
+                                    if ($orderDetails) {
+                                        $total = collect($orderDetails)->sum('subtotal');
+                                        $set('../../total_harga', $total);
+                                    }
+                                }
+                            }),
                         
                         Forms\Components\TextInput::make('harga')
                             ->numeric()
                             ->disabled()
                             ->dehydrated()
-                            ->label('Harga Product'),
+                            ->label('Harga Product')
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                $quantity = $get('quantity');
+                                if ($state && $quantity) {
+                                    $set('subtotal', $state * $quantity);
+                                    // Update total immediately
+                                    $orderDetails = $get('../../orderDetails');
+                                    if ($orderDetails) {
+                                        $total = collect($orderDetails)->sum('subtotal');
+                                        $set('../../total_harga', $total);
+                                    }
+                                }
+                            }),
+                        
+                        Forms\Components\TextInput::make('subtotal')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated()
+                            ->label('Subtotal')
+                            ->prefix('Rp')
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                // Update total when subtotal changes
+                                $orderDetails = $get('../../orderDetails');
+                                if ($orderDetails) {
+                                    $total = collect($orderDetails)->sum('subtotal');
+                                    $set('../../total_harga', $total);
+                                }
+                            }),
                     ])
-                    ->columns(3)
+                    ->columns(4)
                     ->defaultItems(1)
                     ->addActionLabel('Tambah Product')
                     ->label('Detail Order')
                     ->required()
-                    ->minItems(1),
+                    ->minItems(1)
+                    ->live()
+                    ->afterStateUpdated(function ($state, Forms\Set $set) {
+                        if ($state) {
+                            $total = collect($state)->sum('subtotal');
+                            $set('total_harga', $total);
+                        }
+                    }),
+                
+                Forms\Components\TextInput::make('total_harga')
+                    ->numeric()
+                    ->disabled()
+                    ->dehydrated()
+                    ->label('Total Harga')
+                    ->prefix('Rp')
+                    ->live()
+                    ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
+                        // Calculate initial total when form is loaded
+                        $orderDetails = $get('orderDetails');
+                        if ($orderDetails) {
+                            $total = collect($orderDetails)->sum('subtotal');
+                            $set('total_harga', $total);
+                        }
+                    }),
                 
                 Forms\Components\Radio::make('status_transaksi')
                     ->options([
@@ -138,14 +214,20 @@ class OrderResource extends Resource
                     ->listWithLineBreaks()
                     ->label('Products'),
                 
-                Tables\Columns\TextColumn::make('orderDetails.quantity')
-                    ->listWithLineBreaks()
-                    ->label('Quantities'),
+                Tables\Columns\TextColumn::make('total_quantity')
+                    ->label('Total Quantity')
+                    ->getStateUsing(function (Order $record) {
+                        return $record->orderDetails->sum('quantity');
+                    }),
                 
-                Tables\Columns\TextColumn::make('orderDetails.harga')
-                    ->listWithLineBreaks()
+                Tables\Columns\TextColumn::make('total_harga')
+                    ->label('Total Harga')
                     ->money('IDR')
-                    ->label('Harga'),
+                    ->getStateUsing(function (Order $record) {
+                        return $record->orderDetails->sum(function ($detail) {
+                            return $detail->quantity * $detail->harga;
+                        });
+                    }),
                 
                 Tables\Columns\TextColumn::make('status_transaksi')
                     ->badge()
@@ -188,6 +270,12 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('print')
+                    ->label('Print Invoice')
+                    ->icon('heroicon-o-printer')
+                    ->url(fn (Order $record): string => route('filament.admin.resources.orders.print', ['record' => $record]))
+                    ->openUrlInNewTab(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
@@ -210,6 +298,7 @@ class OrderResource extends Resource
             'index' => Pages\ListOrders::route('/'),
             'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'print' => Pages\PrintInvoice::route('/{record}/print'),
         ];
     }
 }

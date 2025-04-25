@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-             $table->foreignId('order_id')  // Menyimpan foreign key untuk jenis
-              ->constrained('orders')  // Menunjukkan bahwa jenis_id merujuk ke tabel jenis
-              ->onDelete('cascade');
-            $table->integer('jumlah_bayar');
-            $table->integer('sisa_bayar');
+            $table->foreignId('order_id')->constrained()->onDelete('cascade');
+            $table->decimal('jumlah_bayar', 12, 2);
+            $table->decimal('sisa_bayar', 12, 2);
             $table->timestamps();
         });
     }
@@ -28,5 +26,23 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('payments');
+    }
+};
+
+// Create new migration for adding subtotal and total_harga
+$newMigration = new class extends Migration {
+    public function up(): void
+    {
+        Schema::table('orders', function (Blueprint $table) {
+            $table->decimal('subtotal', 12, 2)->default(0);
+            $table->decimal('total_harga', 12, 2)->default(0);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('orders', function (Blueprint $table) {
+            $table->dropColumn(['subtotal', 'total_harga']);
+        });
     }
 };
