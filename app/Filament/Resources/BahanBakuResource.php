@@ -99,6 +99,21 @@ class BahanBakuResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('increaseStock')
+                    ->label('Tambah Stok')
+                    ->icon('heroicon-o-plus')
+                    ->form([
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Jumlah')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                    ])
+                    ->action(function (BahanBaku $record, array $data): void {
+                        $record->update([
+                            'stok' => $record->stok + $data['amount']
+                        ]);
+                    }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
             ])
