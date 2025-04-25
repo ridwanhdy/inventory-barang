@@ -36,7 +36,6 @@ class ProductResource extends Resource
                     ->label('Jenis')
                     ->relationship('jenis', 'nama_jenis')
                     ->default(2) // Bisa diganti sesuai dengan ID jenis default yang diinginkan
-                    ->disabled()
                     ->required(),
                 Select::make('kategori_id')
                     ->label('Kategori')

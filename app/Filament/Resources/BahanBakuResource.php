@@ -53,8 +53,7 @@ class BahanBakuResource extends Resource
                 Select::make('jenis_id')
                     ->label('Jenis')
                     ->relationship('jenis', 'nama_jenis')
-                    ->default(1) // Bisa diganti sesuai dengan ID jenis default yang diinginkan
-                    ->disabled()
+                    ->default(1) // Set default value to 1
                     ->required(),
 
                 // Input untuk stok
