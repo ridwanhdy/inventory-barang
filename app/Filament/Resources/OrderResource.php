@@ -3,7 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers;
+use App\Filament\Resources\OrderResource\RelationManagers\PaymentsRelationManager;
+use App\Filament\Resources\OrderResource\RelationManagers\PaymentDetailsRelationManager;
 use App\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -18,8 +19,8 @@ class OrderResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationLabel = 'Order';
-     protected static ?string $navigationGroup = 'Toko';
-     protected static ?int $navigationSort = 5;
+    protected static ?string $navigationGroup = 'Toko';
+    protected static ?int $navigationSort = 5;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -103,6 +104,15 @@ class OrderResource extends Resource
                     ->required()
                     ->label('Status Pembayaran'),
                 
+                Forms\Components\Select::make('metode_pembayaran')
+                    ->options([
+                        'cash' => 'Cash',
+                        'bank' => 'Bank',
+                    ])
+                    ->required()
+                    ->label('Metode Pembayaran')
+                    ->default('cash'),
+                
                 Forms\Components\DatePicker::make('tanggal_order')
                     ->required()
                     ->label('Tanggal Order')
@@ -126,17 +136,14 @@ class OrderResource extends Resource
                 
                 Tables\Columns\TextColumn::make('orderDetails.product.nama_product')
                     ->listWithLineBreaks()
-                    ->bulleted()
                     ->label('Products'),
                 
                 Tables\Columns\TextColumn::make('orderDetails.quantity')
                     ->listWithLineBreaks()
-                    ->bulleted()
                     ->label('Quantities'),
                 
                 Tables\Columns\TextColumn::make('orderDetails.harga')
                     ->listWithLineBreaks()
-                    ->bulleted()
                     ->money('IDR')
                     ->label('Harga'),
                 
@@ -155,6 +162,11 @@ class OrderResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('Status Pembayaran'),
+                
+                Tables\Columns\TextColumn::make('metode_pembayaran')
+                    ->searchable()
+                    ->sortable()
+                    ->label('Metode Pembayaran'),
                 
                 Tables\Columns\TextColumn::make('tanggal_order')
                     ->date()
@@ -188,7 +200,7 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            PaymentsRelationManager::class,
         ];
     }
 

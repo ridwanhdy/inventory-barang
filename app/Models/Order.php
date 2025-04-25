@@ -11,6 +11,7 @@ class Order extends Model
         'users_id',
         'status_transaksi',
         'status_pembayaran',
+        'metode_pembayaran',
         'tanggal_order',
     ];
 
@@ -27,6 +28,16 @@ class Order extends Model
     public function orderDetails()
     {
         return $this->hasMany(OrderDetail::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function paymentDetails()
+    {
+        return $this->hasManyThrough(PaymentDetail::class, Payment::class);
     }
 
     protected static function booted()
