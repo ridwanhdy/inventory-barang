@@ -31,8 +31,14 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->brandName('Inventory Barang')
             ->login()
+            ->font('Poppins')
             ->colors([
-                'primary' => Color::Amber,
+                'danger' => Color::Rose,
+            'gray' => Color::Gray,
+            'info' => Color::Blue,
+            'primary' => Color::Lime,
+            'success' => Color::Emerald,
+            'warning' => Color::Orange,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -41,8 +47,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
                 StatsOverview::class,
+                Widgets\AccountWidget::class,
                 LatestOrders::class,
                 MonthlyOrders::class,
             ])

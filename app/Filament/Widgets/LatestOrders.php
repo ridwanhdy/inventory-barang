@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 class LatestOrders extends TableWidget
 {
     protected static ?string $heading = 'Order Terbaru';
+    
 
     protected function getTableQuery(): Builder
     {
