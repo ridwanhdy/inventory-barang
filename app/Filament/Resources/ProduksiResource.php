@@ -23,7 +23,7 @@ class ProduksiResource extends Resource
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationLabel = 'Produksi';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-cog';
 
     public static function form(Form $form): Form
     {

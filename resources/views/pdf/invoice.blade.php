@@ -59,7 +59,7 @@
     <div class="company-info">
         <h3>Informasi Customer</h3>
         <p><strong>Nama:</strong> {{ $customer->nama }}</p>
-        <p><strong>Alamat:</strong> {{ $customer->alamat }}</p>
+        <p><strong>Alamat:</strong> {!! strip_tags($customer->alamat) !!}</p>
         <p><strong>No. Telp:</strong> {{ $customer->no_telp }}</p>
     </div>
 

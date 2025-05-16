@@ -10,10 +10,13 @@ class ListBahanBakus extends ListRecords
 {
     protected static string $resource = BahanBakuResource::class;
 
+    protected ?string $heading = 'Bahan Baku';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tambah Bahan Baku'),
         ];
     }
 }

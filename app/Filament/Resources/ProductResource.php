@@ -25,7 +25,7 @@ class ProductResource extends Resource
     protected static ?string $navigationLabel = 'Produk';
 
     protected static ?int $navigationSort = 4;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-cube-transparent';
 
     public static function form(Form $form): Form
     {
@@ -35,7 +35,6 @@ class ProductResource extends Resource
                 Select::make('jenis_id')
                     ->label('Jenis')
                     ->relationship('jenis', 'nama_jenis')
-                    ->default(2) // Bisa diganti sesuai dengan ID jenis default yang diinginkan
                     ->required(),
                 Select::make('kategori_id')
                     ->label('Kategori')

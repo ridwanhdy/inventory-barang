@@ -27,12 +27,18 @@ class BahanBakuResource extends Resource
     protected static ?string $navigationLabel = 'Bahan Baku';
 
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
+
+    protected static ?string $title = 'tets';
+
+    protected ?string $heading = 'Bahan Baku';
+
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                TextInput::make('author'),
                 TextInput::make('nama_bahan')
                     ->label('Nama Bahan')
                     ->required(),
@@ -53,7 +59,6 @@ class BahanBakuResource extends Resource
                 Select::make('jenis_id')
                     ->label('Jenis')
                     ->relationship('jenis', 'nama_jenis')
-                    ->default(1) // Set default value to 1
                     ->required(),
 
                 // Input untuk stok
