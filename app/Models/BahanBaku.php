@@ -31,4 +31,9 @@ class BahanBaku extends Model
     {
         return $this->belongsTo(Jenis::class);
     }
+
+    public function histories()
+    {
+        return $this->hasMany(BahanBakuHistory::class);
+    }
 }

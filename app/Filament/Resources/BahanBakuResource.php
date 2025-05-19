@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\BahanBakuResource\Pages;
-use App\Filament\Resources\BahanBakuResource\RelationManagers;
 use App\Models\BahanBaku;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -15,60 +14,49 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Infolists\Infolist;
 
 class BahanBakuResource extends Resource
 {
     protected static ?string $model = BahanBaku::class;
 
     protected static ?string $navigationGroup = 'Manajemen Bahan';
-
     protected static ?int $navigationSort = 2;
-
     protected static ?string $navigationLabel = 'Bahan Baku';
-
-
     protected static ?string $navigationIcon = 'heroicon-o-cube';
-
-    protected static ?string $title = 'tets';
-
     protected ?string $heading = 'Bahan Baku';
-
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('author'),
                 TextInput::make('nama_bahan')
                     ->label('Nama Bahan')
                     ->required(),
 
-                // Select untuk Satuan
                 Select::make('satuan_id')
                     ->label('Satuan')
                     ->relationship('satuan', 'nama_satuan')
                     ->required(),
 
-                // Select untuk Kategori
                 Select::make('kategori_id')
                     ->label('Kategori')
                     ->relationship('kategori', 'nama_kategori')
                     ->required(),
 
-                // Select untuk Jenis
                 Select::make('jenis_id')
                     ->label('Jenis')
                     ->relationship('jenis', 'nama_jenis')
                     ->required(),
 
-                // Input untuk stok
-                Forms\Components\TextInput::make('stok')
+                TextInput::make('stok')
                     ->label('Stok')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->disabled(fn ($record) => $record !== null)
+                    ->dehydrated(fn ($record) => $record === null),
 
-                // Input untuk stok minimal
-                Forms\Components\TextInput::make('stok_minimal')
+                TextInput::make('stok_minimal')
                     ->label('Stok Minimal')
                     ->required()
                     ->numeric(),
@@ -80,30 +68,27 @@ class BahanBakuResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nama_bahan')
-                    ->label('Nama Bahan'),
+                    ->label('Nama Bahan')
+                    ->searchable()
+                    ->sortable(),
                 
-                // Menampilkan nama satuan dari relasi
                 TextColumn::make('satuan.nama_satuan')
                     ->label('Satuan'),
 
-                // Menampilkan nama kategori dari relasi
-                TextColumn::make('kategori.nama_kategori')
-                    ->label('Kategori'),
-
-                // Menampilkan nama jenis dari relasi
-                TextColumn::make('jenis.nama_jenis')
-                    ->label('Jenis'),
-
                 TextColumn::make('stok')
-                    ->label('Stok'),
+                    ->label('Stok')
+                    ->sortable(),
 
                 TextColumn::make('stok_minimal')
-                    ->label('Stok Minimal'),
+                    ->label('Stok Minimal')
+                    ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('increaseStock')
                     ->label('Tambah Stok')
                     ->icon('heroicon-o-plus')
@@ -119,8 +104,6 @@ class BahanBakuResource extends Resource
                             'stok' => $record->stok + $data['amount']
                         ]);
                     }),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -141,6 +124,7 @@ class BahanBakuResource extends Resource
         return [
             'index' => Pages\ListBahanBakus::route('/'),
             'create' => Pages\CreateBahanBaku::route('/create'),
+            'view' => Pages\ViewBahanBaku::route('/{record}'),
             'edit' => Pages\EditBahanBaku::route('/{record}/edit'),
         ];
     }
