@@ -77,11 +77,11 @@ class ViewBahanBaku extends ViewRecord
                         Infolists\Components\RepeatableEntry::make('histories')
                             ->schema([
                                 Infolists\Components\TextEntry::make('jumlah_perubahan')
-                                    ->label('Jumlah Perubahan'),
+                                    ->label('Jumlah Masuk'),
                                 Infolists\Components\TextEntry::make('keterangan')
                                     ->label('Keterangan'),
                                 Infolists\Components\TextEntry::make('created_at')
-                                    ->label('Tanggal')
+                                    ->label('Tanggal Masuk')
                                     ->dateTime('d M Y H:i'),
                             ])
                             ->columns(3),

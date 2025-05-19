@@ -22,7 +22,6 @@ class ProduksiResource extends Resource
     protected static ?string $navigationGroup = 'Manajemen Produksi';
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationLabel = 'Produksi';
-
     protected static ?string $navigationIcon = 'heroicon-o-cog';
 
     public static function form(Form $form): Form
@@ -51,13 +50,23 @@ class ProduksiResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('product.nama_product')->label('Produk'),
-            Tables\Columns\TextColumn::make('jumlah_produksi'),
-            Tables\Columns\TextColumn::make('produksi_mulai'),
-            Tables\Columns\TextColumn::make('produksi_selesai')->sortable(),
-            Tables\Columns\BadgeColumn::make('status'),
+                Tables\Columns\TextColumn::make('jumlah_produksi'),
+                Tables\Columns\TextColumn::make('produksi_mulai'),
+                Tables\Columns\TextColumn::make('produksi_selesai')->sortable(),
+                Tables\Columns\BadgeColumn::make('status'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('product')
+                    ->relationship('product', 'nama_product')
+                    ->label('Produk')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'Proses' => 'Proses',
+                        'Batal' => 'Batal',
+                        'Selesai' => 'Selesai',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
