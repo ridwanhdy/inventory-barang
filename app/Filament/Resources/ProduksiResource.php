@@ -53,7 +53,13 @@ class ProduksiResource extends Resource
                 Tables\Columns\TextColumn::make('jumlah_produksi'),
                 Tables\Columns\TextColumn::make('produksi_mulai'),
                 Tables\Columns\TextColumn::make('produksi_selesai')->sortable(),
-                Tables\Columns\BadgeColumn::make('status'),
+                Tables\Columns\SelectColumn::make('status')
+                    ->options([
+                        'Proses' => 'Proses',
+                        'Batal' => 'Batal',
+                        'Selesai' => 'Selesai',
+                    ])
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('product')
@@ -70,6 +76,16 @@ class ProduksiResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\SelectAction::make('status')
+                    ->label('Status')
+                    ->options([
+                        'Proses' => 'Proses',
+                        'Batal' => 'Batal',
+                        'Selesai' => 'Selesai',
+                    ])
+                    ->action(function ($record, $state) {
+                        $record->update(['status' => $state]);
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

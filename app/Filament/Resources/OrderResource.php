@@ -27,39 +27,109 @@ class OrderResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('customer_id')
-                    ->relationship('customer', 'nama')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->label('Customer'),
-                
-                Forms\Components\Select::make('users_id')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->label('User'),
-                
-                Forms\Components\Repeater::make('orderDetails')
-                    ->relationship()
+                Forms\Components\Section::make('Informasi Order')
                     ->schema([
-                        Forms\Components\Select::make('product_id')
-                            ->relationship('product', 'nama_product')
+                        Forms\Components\Select::make('customer_id')
+                            ->relationship('customer', 'nama')
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->label('Product')
-                            ->live()
-                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                if ($state) {
-                                    $product = \App\Models\Product::find($state);
-                                    if ($product) {
-                                        $set('harga', $product->harga_jual);
-                                        // Update subtotal when product changes
-                                        $quantity = $get('quantity');
-                                        if ($quantity) {
-                                            $set('subtotal', $quantity * $product->harga_jual);
+                            ->label('Customer'),
+                        
+                        Forms\Components\Select::make('users_id')
+                            ->relationship('user', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->label('User'),
+                        
+                        Forms\Components\DatePicker::make('tanggal_order')
+                            ->required()
+                            ->label('Tanggal Order')
+                            ->default(now()),
+                    ])
+                    ->columns(3),
+
+                Forms\Components\Section::make('Status & Pembayaran')
+                    ->schema([
+                        Forms\Components\Radio::make('status_transaksi')
+                            ->options([
+                                'proses' => 'Proses',
+                                'batal' => 'Batal',
+                                'selesai' => 'Selesai',
+                            ])
+                            ->required()
+                            ->label('Status Transaksi')
+                            ->inline()
+                            ->default('proses')
+                            ->descriptions([
+                                'proses' => 'Order sedang diproses',
+                                'batal' => 'Order dibatalkan',
+                                'selesai' => 'Order selesai',
+                            ]),
+                        
+                        Forms\Components\Select::make('status_pembayaran')
+                            ->options([
+                                'belum_bayar' => 'Belum Bayar',
+                                'cicilan' => 'Cicilan',
+                                'lunas' => 'Lunas',
+                            ])
+                            ->required()
+                            ->label('Status Pembayaran'),
+                        
+                        Forms\Components\Select::make('metode_pembayaran')
+                            ->options([
+                                'cash' => 'Cash',
+                                'bank' => 'Bank',
+                            ])
+                            ->required()
+                            ->label('Metode Pembayaran')
+                            ->default('cash'),
+                    ])
+                    ->columns(3),
+
+                Forms\Components\Section::make('Detail Order')
+                    ->schema([
+                        Forms\Components\Repeater::make('orderDetails')
+                            ->relationship()
+                            ->schema([
+                                Forms\Components\Select::make('product_id')
+                                    ->relationship('product', 'nama_product')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->label('Product')
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        if ($state) {
+                                            $product = \App\Models\Product::find($state);
+                                            if ($product) {
+                                                $set('harga', $product->harga_jual);
+                                                // Update subtotal when product changes
+                                                $quantity = $get('quantity');
+                                                if ($quantity) {
+                                                    $set('subtotal', $quantity * $product->harga_jual);
+                                                    // Update total immediately
+                                                    $orderDetails = $get('../../orderDetails');
+                                                    if ($orderDetails) {
+                                                        $total = collect($orderDetails)->sum('subtotal');
+                                                        $set('../../total_harga', $total);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }),
+                                
+                                Forms\Components\TextInput::make('quantity')
+                                    ->numeric()
+                                    ->required()
+                                    ->minValue(1)
+                                    ->label('Quantity')
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        $harga = $get('harga');
+                                        if ($state && $harga) {
+                                            $set('subtotal', $state * $harga);
                                             // Update total immediately
                                             $orderDetails = $get('../../orderDetails');
                                             if ($orderDetails) {
@@ -67,132 +137,73 @@ class OrderResource extends Resource
                                                 $set('../../total_harga', $total);
                                             }
                                         }
-                                    }
-                                }
-                            }),
-                        
-                        Forms\Components\TextInput::make('quantity')
-                            ->numeric()
+                                    }),
+                                
+                                Forms\Components\TextInput::make('harga')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->label('Harga Product')
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        $quantity = $get('quantity');
+                                        if ($state && $quantity) {
+                                            $set('subtotal', $state * $quantity);
+                                            // Update total immediately
+                                            $orderDetails = $get('../../orderDetails');
+                                            if ($orderDetails) {
+                                                $total = collect($orderDetails)->sum('subtotal');
+                                                $set('../../total_harga', $total);
+                                            }
+                                        }
+                                    }),
+                                
+                                Forms\Components\TextInput::make('subtotal')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->label('Subtotal')
+                                    ->prefix('Rp')
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        // Update total when subtotal changes
+                                        $orderDetails = $get('../../orderDetails');
+                                        if ($orderDetails) {
+                                            $total = collect($orderDetails)->sum('subtotal');
+                                            $set('../../total_harga', $total);
+                                        }
+                                    }),
+                            ])
+                            ->columns(4)
+                            ->defaultItems(1)
+                            ->addActionLabel('Tambah Product')
+                            ->label('Detail Order')
                             ->required()
-                            ->minValue(1)
-                            ->label('Quantity')
+                            ->minItems(1)
                             ->live()
-                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                $harga = $get('harga');
-                                if ($state && $harga) {
-                                    $set('subtotal', $state * $harga);
-                                    // Update total immediately
-                                    $orderDetails = $get('../../orderDetails');
-                                    if ($orderDetails) {
-                                        $total = collect($orderDetails)->sum('subtotal');
-                                        $set('../../total_harga', $total);
-                                    }
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                if ($state) {
+                                    $total = collect($state)->sum('subtotal');
+                                    $set('total_harga', $total);
                                 }
                             }),
                         
-                        Forms\Components\TextInput::make('harga')
+                        Forms\Components\TextInput::make('total_harga')
                             ->numeric()
                             ->disabled()
                             ->dehydrated()
-                            ->label('Harga Product')
-                            ->live()
-                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                $quantity = $get('quantity');
-                                if ($state && $quantity) {
-                                    $set('subtotal', $state * $quantity);
-                                    // Update total immediately
-                                    $orderDetails = $get('../../orderDetails');
-                                    if ($orderDetails) {
-                                        $total = collect($orderDetails)->sum('subtotal');
-                                        $set('../../total_harga', $total);
-                                    }
-                                }
-                            }),
-                        
-                        Forms\Components\TextInput::make('subtotal')
-                            ->numeric()
-                            ->disabled()
-                            ->dehydrated()
-                            ->label('Subtotal')
+                            ->label('Total Harga')
                             ->prefix('Rp')
                             ->live()
-                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                // Update total when subtotal changes
-                                $orderDetails = $get('../../orderDetails');
+                            ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
+                                // Calculate initial total when form is loaded
+                                $orderDetails = $get('orderDetails');
                                 if ($orderDetails) {
                                     $total = collect($orderDetails)->sum('subtotal');
-                                    $set('../../total_harga', $total);
+                                    $set('total_harga', $total);
                                 }
                             }),
-                    ])
-                    ->columns(4)
-                    ->defaultItems(1)
-                    ->addActionLabel('Tambah Product')
-                    ->label('Detail Order')
-                    ->required()
-                    ->minItems(1)
-                    ->live()
-                    ->afterStateUpdated(function ($state, Forms\Set $set) {
-                        if ($state) {
-                            $total = collect($state)->sum('subtotal');
-                            $set('total_harga', $total);
-                        }
-                    }),
-                
-                Forms\Components\TextInput::make('total_harga')
-                    ->numeric()
-                    ->disabled()
-                    ->dehydrated()
-                    ->label('Total Harga')
-                    ->prefix('Rp')
-                    ->live()
-                    ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
-                        // Calculate initial total when form is loaded
-                        $orderDetails = $get('orderDetails');
-                        if ($orderDetails) {
-                            $total = collect($orderDetails)->sum('subtotal');
-                            $set('total_harga', $total);
-                        }
-                    }),
-                
-                Forms\Components\Radio::make('status_transaksi')
-                    ->options([
-                        'proses' => 'Proses',
-                        'batal' => 'Batal',
-                        'selesai' => 'Selesai',
-                    ])
-                    ->required()
-                    ->label('Status Transaksi')
-                    ->inline()
-                    ->default('proses')
-                    ->descriptions([
-                        'proses' => 'Order sedang diproses',
-                        'batal' => 'Order dibatalkan',
-                        'selesai' => 'Order selesai',
                     ]),
-                
-                Forms\Components\Select::make('status_pembayaran')
-                    ->options([
-                        'belum_bayar' => 'Belum Bayar',
-                        'cicilan' => 'Cicilan',
-                        'lunas' => 'Lunas',
-                    ])
-                    ->required()
-                    ->label('Status Pembayaran'),
-                
-                Forms\Components\Select::make('metode_pembayaran')
-                    ->options([
-                        'cash' => 'Cash',
-                        'bank' => 'Bank',
-                    ])
-                    ->required()
-                    ->label('Metode Pembayaran')
-                    ->default('cash'),
-                
-                Forms\Components\DatePicker::make('tanggal_order')
-                    ->required()
-                    ->label('Tanggal Order')
-                    ->default(now()),
             ]);
     }
 
@@ -205,10 +216,6 @@ class OrderResource extends Resource
                     ->sortable()
                     ->label('Customer'),
                 
-                Tables\Columns\TextColumn::make('user.name')
-                    ->searchable()
-                    ->sortable()
-                    ->label('User'),
                 
                 Tables\Columns\TextColumn::make('orderDetails.product.nama_product')
                     ->listWithLineBreaks()
@@ -240,15 +247,7 @@ class OrderResource extends Resource
                     ->sortable()
                     ->label('Status Transaksi'),
                 
-                Tables\Columns\TextColumn::make('status_pembayaran')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Status Pembayaran'),
-                
-                Tables\Columns\TextColumn::make('metode_pembayaran')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Metode Pembayaran'),
+
                 
                 Tables\Columns\TextColumn::make('tanggal_order')
                     ->date()

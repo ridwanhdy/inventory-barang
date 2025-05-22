@@ -10,6 +10,8 @@ class ListProduksis extends ListRecords
 {
     protected static string $resource = ProduksiResource::class;
 
+    protected ?string $heading = 'Produksi';
+
     protected function getHeaderActions(): array
     {
         return [
