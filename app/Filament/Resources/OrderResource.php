@@ -88,7 +88,23 @@ class OrderResource extends Resource
                     ])
                     ->columns(3),
 
-                Forms\Components\Section::make('Detail Order')
+                Forms\Components\Section::make('Pembayaran')
+                    ->schema([
+                        Forms\Components\TextInput::make('jumlah_bayar')
+                            ->numeric()
+                            ->required()
+                            ->label('Jumlah Bayar')
+                            ->prefix('Rp'),
+                        
+                        Forms\Components\TextInput::make('sisa_bayar')
+                            ->numeric()
+                            ->required()
+                            ->label('Sisa Bayar')
+                            ->prefix('Rp'),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Tambah Product')
                     ->schema([
                         Forms\Components\Repeater::make('orderDetails')
                             ->relationship()
@@ -216,7 +232,6 @@ class OrderResource extends Resource
                     ->sortable()
                     ->label('Customer'),
                 
-                
                 Tables\Columns\TextColumn::make('orderDetails.product.nama_product')
                     ->listWithLineBreaks()
                     ->label('Products'),
@@ -246,8 +261,6 @@ class OrderResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('Status Transaksi'),
-                
-
                 
                 Tables\Columns\TextColumn::make('tanggal_order')
                     ->date()

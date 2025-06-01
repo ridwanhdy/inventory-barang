@@ -10,6 +10,8 @@ class ListSatuans extends ListRecords
 {
     protected static string $resource = SatuanResource::class;
 
+    protected ?string $heading = 'Satuan';
+
     protected function getHeaderActions(): array
     {
         return [
