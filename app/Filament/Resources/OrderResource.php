@@ -23,6 +23,11 @@ class OrderResource extends Resource
     protected static ?int $navigationSort = 5;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->role === 'admin' || auth()->user()->role === 'kasir';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

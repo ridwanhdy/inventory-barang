@@ -24,6 +24,11 @@ class ProduksiResource extends Resource
     protected static ?string $navigationLabel = 'Produksi';
     protected static ?string $navigationIcon = 'heroicon-o-cog';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->role === 'admin';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

@@ -26,6 +26,11 @@ class BahanBakuResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-cube';
     protected ?string $heading = 'Bahan Baku';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->role === 'admin';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

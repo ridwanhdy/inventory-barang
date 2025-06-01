@@ -27,6 +27,11 @@ class ProductResource extends Resource
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->role === 'admin';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
