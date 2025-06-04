@@ -15,6 +15,9 @@ class Order extends Model
         'metode_pembayaran',
         'subtotal',
         'total_harga',
+        'jumlah_bayar',
+        'sisa_bayar',
+        'kembalian',
     ];
 
     protected $casts = [
@@ -58,6 +61,19 @@ class Order extends Model
         static::saving(function ($order) {
             // Calculate total bayar from order details
             $order->total_harga = $order->orderDetails->sum('subtotal');
+        });
+
+        static::saved(function ($order) {
+            // Create payment record if jumlah_bayar is set
+            if ($order->jumlah_bayar) {
+                // Jika ada kembalian, jumlah_bayar yang disimpan adalah total_harga
+                $jumlahBayar = $order->kembalian > 0 ? $order->total_harga : $order->jumlah_bayar;
+                
+                $order->payments()->create([
+                    'jumlah_bayar' => $jumlahBayar,
+                    'sisa_bayar' => $order->sisa_bayar,
+                ]);
+            }
         });
     }
 }
