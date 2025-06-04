@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
-            $table->decimal('jumlah_bayar', 12, 2);
-            $table->decimal('sisa_bayar', 12, 2);
+            $table->integer('jumlah_bayar');
+            $table->integer('sisa_bayar');
+            $table->enum('metode_pembayaran', ['cash', 'bank'])->default('cash');
             $table->timestamps();
         });
     }

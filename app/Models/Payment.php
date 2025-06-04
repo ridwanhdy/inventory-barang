@@ -10,6 +10,7 @@ class Payment extends Model
         'order_id',
         'jumlah_bayar',
         'sisa_bayar',
+        'metode_pembayaran',
     ];
 
     public function order()

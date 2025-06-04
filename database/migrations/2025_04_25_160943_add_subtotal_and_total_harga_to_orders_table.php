@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->decimal('subtotal', 12, 2)->default(0)->after('tanggal_order');
-            $table->decimal('total_harga', 12, 2)->default(0)->after('subtotal');
+            $table->integer('subtotal')->default(0)->after('tanggal_order');
+            $table->integer('total_harga')->default(0)->after('subtotal');
         });
     }
 

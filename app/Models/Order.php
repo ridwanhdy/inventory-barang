@@ -12,7 +12,6 @@ class Order extends Model
         'tanggal_order',
         'status_transaksi',
         'status_pembayaran',
-        'metode_pembayaran',
         'subtotal',
         'total_harga',
         'jumlah_bayar',

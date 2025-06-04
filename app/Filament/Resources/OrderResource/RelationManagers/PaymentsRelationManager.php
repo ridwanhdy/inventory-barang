@@ -54,6 +54,14 @@ class PaymentsRelationManager extends RelationManager
                             $set('sisa_bayar', $sisaBayar);
                         }
                     }),
+                    Forms\Components\Select::make('metode_pembayaran')
+                    ->options([
+                        'cash' => 'Cash',
+                        'bank' => 'Bank',
+                    ])
+                    ->required()
+                    ->default('cash')
+                    ->label('Metode Pembayaran'),
             ]);
     }
 
@@ -70,6 +78,18 @@ class PaymentsRelationManager extends RelationManager
                     ->money('IDR')
                     ->sortable()
                     ->label('Sisa Bayar'),
+                Tables\Columns\TextColumn::make('metode_pembayaran')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'cash' => 'success',
+                        'bank' => 'primary',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'cash' => 'Cash',
+                        'bank' => 'Bank',
+                    })
+                    ->sortable()
+                    ->label('Metode Pembayaran'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tanggal Bayar')
                     ->dateTime()
