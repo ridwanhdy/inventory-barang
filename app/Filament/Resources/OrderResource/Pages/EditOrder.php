@@ -17,4 +17,18 @@ class EditOrder extends EditRecord
                 ->label('Hapus'),
         ];
     }
+
+    protected function getFormActions(): array
+    {
+        return [
+            Actions\Action::make('save')
+                ->label('Simpan')
+                ->submit('save')
+                ->keyBindings(['mod+s']),
+            Actions\Action::make('cancel')
+                ->label('Batal')
+                ->url(fn () => $this->getResource()::getUrl())
+                ->color('gray'),
+        ];
+    }
 }
