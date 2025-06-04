@@ -46,7 +46,10 @@ class OrderResource extends Resource
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->label('User'),
+                            ->label('User')
+                            ->default(auth()->id())
+                            ->disabled()
+                            ->dehydrated(),
                         
                         Forms\Components\DatePicker::make('tanggal_order')
                             ->required()
