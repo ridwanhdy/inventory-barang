@@ -17,4 +17,15 @@ class ListOrders extends ListRecords
                 ->label('Tambah Order'),
         ];
     }
+
+    protected function getTableActions(): array
+    {
+        return [
+            Actions\Action::make('print')
+                ->label('Print Invoice')
+                ->icon('heroicon-o-printer')
+                ->url(fn ($record) => route('filament.admin.resources.orders.print', ['record' => $record]))
+                ->openUrlInNewTab(),
+        ];
+    }
 }

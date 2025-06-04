@@ -20,14 +20,23 @@ class PrintInvoice extends ViewRecord
                 ->icon('heroicon-o-printer')
                 ->action(function () {
                     $order = $this->record;
-                    $pdf = Pdf::loadView('pdf.invoice', [
+                    $totalHarga = $order->orderDetails->sum(function ($detail) {
+                        return $detail->quantity * $detail->harga;
+                    });
+                    $totalBayar = $order->payments->sum('jumlah_bayar');
+                    
+                    $pdf = PDF::loadView('pdf.invoice', [
                         'order' => $order,
-                        'orderDetails' => $order->orderDetails,
                         'customer' => $order->customer,
+                        'orderDetails' => $order->orderDetails,
+                        'payments' => $order->payments,
+                        'totalHarga' => $totalHarga,
+                        'totalBayar' => $totalBayar,
+                        'sisaBayar' => max(0, $totalHarga - $totalBayar),
                     ]);
 
                     return Response::streamDownload(function () use ($pdf) {
-                        echo $pdf->stream();
+                        echo $pdf->output();
                     }, 'invoice-' . $order->id . '.pdf');
                 }),
         ];

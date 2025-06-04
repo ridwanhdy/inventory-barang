@@ -227,6 +227,13 @@ class OrderResource extends Resource
                         });
                     }),
                 
+                Tables\Columns\TextColumn::make('total_bayar')
+                    ->label('Total Bayar')
+                    ->money('IDR')
+                    ->getStateUsing(function (Order $record) {
+                        return $record->payments->sum('jumlah_bayar');
+                    }),
+                
                 Tables\Columns\TextColumn::make('status_transaksi')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -258,7 +265,6 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('print')
                     ->label('Print Invoice')
                     ->icon('heroicon-o-printer')
