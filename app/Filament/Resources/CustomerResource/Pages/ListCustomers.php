@@ -17,4 +17,13 @@ class ListCustomers extends ListRecords
                 ->label('Tambah Customer'),
         ];
     }
+
+    protected function getTableActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Hapus'),
+        ];
+    }
 }

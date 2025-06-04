@@ -72,8 +72,24 @@ class OrderResource extends Resource
                                     'batal' => 'Order dibatalkan',
                                     'selesai' => 'Order selesai',
                                 ]),
+
+                            Forms\Components\Radio::make('status_pembayaran')
+                                ->options([
+                                    'belum_bayar' => 'Belum Bayar',
+                                    'cicilan' => 'Cicilan',
+                                    'lunas' => 'Lunas',
+                                ])
+                                ->required()
+                                ->label('Status Pembayaran')
+                                ->inline()
+                                ->default('belum_bayar')
+                                ->descriptions([
+                                    'belum_bayar' => 'Belum ada pembayaran',
+                                    'cicilan' => 'Pembayaran secara cicilan',
+                                    'lunas' => 'Pembayaran sudah lunas',
+                                ]),
                         ])
-                        ->columns(2)
+                        ->columns(3)
                         ->columnSpan('full'),
 
                     Forms\Components\Wizard\Step::make('Tambah Product')
@@ -283,6 +299,7 @@ class OrderResource extends Resource
     {
         return [
             PaymentsRelationManager::class,
+            PaymentDetailsRelationManager::class,
         ];
     }
 
