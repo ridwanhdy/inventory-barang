@@ -20,6 +20,8 @@ use Filament\Notifications\Notification;
 class ProduksiDetailRelationManager extends RelationManager
 {
     protected static string $relationship = 'ProduksiDetail';
+    
+    protected static ?string $title = 'Bahan Baku';
 
     public function form(Form $form): Form
     {
@@ -59,7 +61,8 @@ class ProduksiDetailRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                ->label('Tambah Bahan Baku'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

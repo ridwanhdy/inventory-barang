@@ -17,6 +17,20 @@ class EditProduct extends EditRecord
         ];
     }
 
+    protected function getFormActions(): array
+    {
+        return [
+            Actions\Action::make('save')
+                ->label('Simpan')
+                ->submit('save')
+                ->keyBindings(['mod+s']),
+            Actions\Action::make('cancel')
+                ->label('Batal')
+                ->url(fn () => $this->getResource()::getUrl())
+                ->color('gray'),
+        ];
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
 {
     $data['jenis_id'] = 2; // ganti dengan id jenis bahan baku

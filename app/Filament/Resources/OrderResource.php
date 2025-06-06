@@ -286,7 +286,8 @@ class OrderResource extends Resource
                     ->icon('heroicon-o-printer')
                     ->url(fn (Order $record): string => route('filament.admin.resources.orders.print', ['record' => $record]))
                     ->openUrlInNewTab(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Hapus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
