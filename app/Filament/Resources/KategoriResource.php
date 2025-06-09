@@ -37,7 +37,8 @@ class KategoriResource extends Resource
         return $form
             ->schema([
                 TextInput::make('nama_kategori')
-                ->label('Nama Kategori'),
+                ->label('Nama Kategori')
+                ->required(),
             ]);
     }
 

@@ -35,7 +35,8 @@ class JenisResource extends Resource
         return $form
             ->schema([
                 TextInput::make('nama_jenis')
-                ->label('Nama Jenis'),
+                ->label('Nama Jenis')
+                ->required(),
             ]);
     }
 

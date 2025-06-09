@@ -37,7 +37,8 @@ class SatuanResource extends Resource
         return $form
             ->schema([
                 TextInput::make('nama_satuan')
-                ->label('Nama Satuan'),
+                ->label('Nama Satuan')
+                ->required(),
             ]);
     }
 

@@ -37,9 +37,12 @@ class CustomerResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('nama'),
-                TextInput::make('nomor_hp'),
+                TextInput::make('nama')
+                ->required(),
+                TextInput::make('nomor_hp')
+                ->required(),
                 RichEditor::make('alamat')
+                ->required()
                 ->columnSpan(2),
             ]);
     }
