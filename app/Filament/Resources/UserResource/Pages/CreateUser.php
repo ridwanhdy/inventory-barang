@@ -8,4 +8,13 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateUser extends CreateRecord
 {
     protected static string $resource = UserResource::class;
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction()->label('Tambah'),
+            ...(static::canCreateAnother() ? [$this->getCreateAnotherFormAction()->label("Tambah & Tambah Lainnya")] : []),
+            $this->getCancelFormAction()->label('Batal'),
+        ];
+    }
 } 

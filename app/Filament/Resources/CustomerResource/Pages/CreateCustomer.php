@@ -9,4 +9,13 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateCustomer extends CreateRecord
 {
     protected static string $resource = CustomerResource::class;
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction()->label('Tambah'),
+            ...(static::canCreateAnother() ? [$this->getCreateAnotherFormAction()->label("Tambah & Tambah Lainnya")] : []),
+            $this->getCancelFormAction()->label('Batal'),
+        ];
+    }
 }
