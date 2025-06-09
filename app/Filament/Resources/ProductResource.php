@@ -16,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
 
 class ProductResource extends Resource
 {
@@ -55,8 +56,15 @@ class ProductResource extends Resource
                 TextInput::make('stok')->disabled()->numeric()->required()->default(0),
                 TextInput::make('harga_jual')->numeric()->required(),
                 FileUpload::make('foto')
+                    ->disk('public')
                     ->directory('produk')
-                    ->image(),
+                    ->visibility('public')
+                    ->image()
+                    ->imageResizeMode('cover')
+                    ->imageCropAspectRatio('1:1')
+                    ->imageResizeTargetWidth('200')
+                    ->imageResizeTargetHeight('200')
+                    ->preserveFilenames(),
             ]);
     }
 
@@ -64,6 +72,13 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('foto')
+                    ->label('Foto Produk')
+                    ->disk('public')
+                    ->visibility('public')
+                    ->square()
+                    ->width(50)
+                    ->height(50),
                 TextColumn::make('nama_product')->searchable(),
                 TextColumn::make('jenis.nama_jenis'),
                 TextColumn::make('kategori.nama_kategori'),

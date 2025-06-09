@@ -261,6 +261,22 @@ class OrderResource extends Resource
                     ->sortable()
                     ->label('Status Transaksi'),
                 
+                Tables\Columns\TextColumn::make('status_pembayaran')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'belum_bayar' => 'Belum Bayar',
+                        'cicilan' => 'Cicilan',
+                        'lunas' => 'Lunas',
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'belum_bayar' => 'danger',
+                        'cicilan' => 'warning',
+                        'lunas' => 'success',
+                    })
+                    ->searchable()
+                    ->sortable()
+                    ->label('Status Pembayaran'),
+                
                 Tables\Columns\TextColumn::make('tanggal_order')
                     ->date()
                     ->sortable()

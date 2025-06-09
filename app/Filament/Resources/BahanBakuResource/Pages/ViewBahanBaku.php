@@ -72,7 +72,7 @@ class ViewBahanBaku extends ViewRecord
                             ->label('Stok Minimal'),
                     ])->columns(2),
 
-                Infolists\Components\Section::make('History Stok')
+                Infolists\Components\Section::make('Riwayat Stok Masuk')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('histories')
                             ->schema([

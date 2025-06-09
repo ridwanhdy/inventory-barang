@@ -4,7 +4,6 @@ namespace App\Filament\Pages;
 
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\LatestOrders;
-use App\Filament\Widgets\MonthlyOrders;
 use Filament\Pages\Dashboard as BasePage;
 
 class Dashboard extends BasePage
@@ -17,14 +16,12 @@ class Dashboard extends BasePage
     {
         return [
             StatsOverview::class,
+            LatestOrders::class,
         ];
     }
 
     public function getWidgets(): array
     {
-        return [
-            LatestOrders::class,
-            MonthlyOrders::class,
-        ];
+        return [];
     }
 } 

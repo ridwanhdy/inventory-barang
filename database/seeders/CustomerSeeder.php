@@ -2,43 +2,28 @@
 
 namespace Database\Seeders;
 
-use App\Models\Customer;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Faker\Factory as Faker;
+use Carbon\Carbon;
 
 class CustomerSeeder extends Seeder
 {
     public function run(): void
     {
-        $customers = [
-            [
-                'nama' => 'Budi Santoso',
-                'alamat' => 'Jl. Merdeka No. 123',
-                'nomor_hp' => '081234567890',
-            ],
-            [
-                'nama' => 'Ani Wijaya',
-                'alamat' => 'Jl. Sudirman No. 45',
-                'nomor_hp' => '082345678901',
-            ],
-            [
-                'nama' => 'Dedi Kurniawan',
-                'alamat' => 'Jl. Gatot Subroto No. 67',
-                'nomor_hp' => '083456789012',
-            ],
-            [
-                'nama' => 'Rina Fitriani',
-                'alamat' => 'Jl. Diponegoro No. 89',
-                'nomor_hp' => '084567890123',
-            ],
-            [
-                'nama' => 'Eko Prasetyo',
-                'alamat' => 'Jl. Thamrin No. 101',
-                'nomor_hp' => '085678901234',
-            ],
-        ];
+        $faker = Faker::create('id_ID');
+        $startDate = Carbon::create(null, 1, 1)->startOfDay(); // 1 Januari tahun ini
+        $endDate = Carbon::create(null, 6, 30)->endOfDay();   // 30 Juni tahun ini
 
-        foreach ($customers as $customer) {
-            Customer::create($customer);
+        while ($startDate <= $endDate) {
+            DB::table('customers')->insert([
+                'nama' => $faker->name,
+                'nomor_hp' => $faker->phoneNumber,
+                'alamat' => $faker->address,
+                'created_at' => $startDate->copy(),
+                'updated_at' => $startDate->copy(),
+            ]);
+            $startDate->addDay();
         }
     }
 } 

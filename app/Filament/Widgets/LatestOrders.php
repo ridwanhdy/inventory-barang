@@ -11,7 +11,8 @@ use Illuminate\Database\Eloquent\Builder;
 class LatestOrders extends TableWidget
 {
     protected static ?string $heading = 'Order Terbaru';
-    
+    protected int|string|array $columnSpan = 'full';
+    protected static ?int $sort = 3;
 
     protected function getTableQuery(): Builder
     {
@@ -30,6 +31,11 @@ class LatestOrders extends TableWidget
             TextColumn::make('status_pembayaran')
                 ->label('Status Pembayaran')
                 ->badge()
+                ->formatStateUsing(fn (string $state): string => match ($state) {
+                    'belum_bayar' => 'Belum Bayar',
+                    'cicilan' => 'Cicilan',
+                    'lunas' => 'Lunas',
+                })
                 ->color(fn (string $state): string => match ($state) {
                     'lunas' => 'success',
                     'cicilan' => 'warning',

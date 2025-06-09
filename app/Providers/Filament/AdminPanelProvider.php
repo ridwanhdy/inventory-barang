@@ -13,7 +13,7 @@ use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use App\Filament\Widgets\LatestOrders;
 use App\Filament\Widgets\StatsOverview;
-use App\Filament\Widgets\MonthlyOrders;
+use App\Filament\Widgets\OrderPerMonth;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -50,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
                 StatsOverview::class,
                 Widgets\AccountWidget::class,
                 LatestOrders::class,
-                MonthlyOrders::class,
+                OrderPerMonth::class,
             ])
             ->middleware([
                 EncryptCookies::class,

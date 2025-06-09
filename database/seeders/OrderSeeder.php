@@ -2,77 +2,46 @@
 
 namespace Database\Seeders;
 
-use App\Models\Order;
-use App\Models\OrderDetail;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class OrderSeeder extends Seeder
 {
     public function run(): void
     {
-        // Order 1 - Pembelian Kaos
-        $order1 = Order::create([
-            'customer_id' => 1,
-            'users_id' => 1,
-            'status_transaksi' => 'selesai',
-            'status_pembayaran' => 'lunas',
-            'metode_pembayaran' => 'cash',
-            'tanggal_order' => now()->subDays(5),
-        ]);
-
-        OrderDetail::create([
-            'order_id' => $order1->id,
-            'product_id' => 1, // Kaos Polos Premium
-            'quantity' => 5,
-            'harga' => 45000,
-        ]);
-
-        OrderDetail::create([
-            'order_id' => $order1->id,
-            'product_id' => 2, // Kaos Sablon Custom
-            'quantity' => 3,
-            'harga' => 65000,
-        ]);
-
-        // Order 2 - Pembelian Jaket
-        $order2 = Order::create([
-            'customer_id' => 2,
-            'users_id' => 1,
-            'status_transaksi' => 'proses',
-            'status_pembayaran' => 'cicilan',
-            'metode_pembayaran' => 'bank',
-            'tanggal_order' => now()->subDays(3),
-        ]);
-
-        OrderDetail::create([
-            'order_id' => $order2->id,
-            'product_id' => 3, // Jaket Hoodie Basic
-            'quantity' => 2,
-            'harga' => 150000,
-        ]);
-
-        OrderDetail::create([
-            'order_id' => $order2->id,
-            'product_id' => 4, // Jaket Bomber Premium
-            'quantity' => 1,
-            'harga' => 200000,
-        ]);
-
-        // Order 3 - Pembelian Varsity
-        $order3 = Order::create([
-            'customer_id' => 3,
-            'users_id' => 1,
-            'status_transaksi' => 'batal',
-            'status_pembayaran' => 'belum_bayar',
-            'metode_pembayaran' => 'cash',
-            'tanggal_order' => now()->subDays(1),
-        ]);
-
-        OrderDetail::create([
-            'order_id' => $order3->id,
-            'product_id' => 5, // Jaket Varsity Classic
-            'quantity' => 2,
-            'harga' => 250000,
-        ]);
+        $statusTransaksi = ['proses', 'batal', 'selesai'];
+        $statusPembayaran = ['belum_bayar', 'cicilan', 'lunas'];
+        $metodePembayaran = ['cash', 'bank'];
+        
+        // Get all customer IDs
+        $customerIds = DB::table('customers')->pluck('id')->toArray();
+        
+        // Get a user ID (assuming there's at least one user)
+        $userId = DB::table('users')->first()->id;
+        
+        // Generate orders for one year
+        $startDate = Carbon::now()->subYear();
+        $endDate = Carbon::now();
+        
+        while ($startDate <= $endDate) {
+            // Generate 1-5 orders per day
+            $ordersPerDay = rand(1, 5);
+            
+            for ($i = 0; $i < $ordersPerDay; $i++) {
+                DB::table('orders')->insert([
+                    'customer_id' => $customerIds[array_rand($customerIds)],
+                    'users_id' => $userId,
+                    'status_transaksi' => $statusTransaksi[array_rand($statusTransaksi)],
+                    'status_pembayaran' => $statusPembayaran[array_rand($statusPembayaran)],
+                    'metode_pembayaran' => $metodePembayaran[array_rand($metodePembayaran)],
+                    'tanggal_order' => $startDate->format('Y-m-d'),
+                    'created_at' => $startDate,
+                    'updated_at' => $startDate,
+                ]);
+            }
+            
+            $startDate->addDay();
+        }
     }
 } 
