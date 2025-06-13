@@ -67,9 +67,11 @@ class ViewBahanBaku extends ViewRecord
                 Infolists\Components\Section::make('Informasi Stok')
                     ->schema([
                         Infolists\Components\TextEntry::make('stok')
-                            ->label('Stok Saat Ini'),
+                            ->label('Stok Saat Ini')
+                            ->formatStateUsing(fn ($state, $record) => $state . ' ' . $record->satuan->nama_satuan),
                         Infolists\Components\TextEntry::make('stok_minimal')
-                            ->label('Stok Minimal'),
+                            ->label('Stok Minimal')
+                            ->formatStateUsing(fn ($state, $record) => $state . ' ' . $record->satuan->nama_satuan),
                     ])->columns(2),
 
                 Infolists\Components\Section::make('Riwayat Stok Masuk')
@@ -77,7 +79,8 @@ class ViewBahanBaku extends ViewRecord
                         Infolists\Components\RepeatableEntry::make('histories')
                             ->schema([
                                 Infolists\Components\TextEntry::make('jumlah_perubahan')
-                                    ->label('Jumlah Masuk'),
+                                    ->label('Jumlah Masuk')
+                                    ->formatStateUsing(fn ($state, $record) => $state . ' ' . $record->bahanBaku->satuan->nama_satuan),
                                 Infolists\Components\TextEntry::make('keterangan')
                                     ->label('Keterangan'),
                                 Infolists\Components\TextEntry::make('created_at')
