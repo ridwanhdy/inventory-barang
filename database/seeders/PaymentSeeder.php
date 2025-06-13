@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Database\Seeder;
 
@@ -9,25 +10,41 @@ class PaymentSeeder extends Seeder
 {
     public function run(): void
     {
-        // Payment untuk order 1 (lunas) - Pembelian Kaos
-        Payment::create([
-            'order_id' => 1,
-            'jumlah_bayar' => 420000, // (5 * 45000) + (3 * 65000)
-            'sisa_bayar' => 0,
-        ]);
+        $orders = Order::all();
 
-        // Payment untuk order 2 (cicilan) - Pembelian Jaket
-        Payment::create([
-            'order_id' => 2,
-            'jumlah_bayar' => 500000, // (2 * 150000) + (1 * 200000)
-            'sisa_bayar' => 200000, // sisa yang belum dibayar
-        ]);
+        foreach ($orders as $order) {
+            $totalHarga = $order->orderDetails->sum(function ($detail) {
+                return $detail->quantity * $detail->harga;
+            });
 
-        // Payment untuk order 3 (belum bayar) - Pembelian Varsity
-        Payment::create([
-            'order_id' => 3,
-            'jumlah_bayar' => 500000, // 2 * 250000
-            'sisa_bayar' => 500000, // belum dibayar sama sekali
-        ]);
+            // Create first payment (50% of total)
+            $jumlahBayar1 = $totalHarga * 0.5;
+            $sisaBayar1 = $totalHarga - $jumlahBayar1;
+            $kembalian1 = 0;
+
+            Payment::create([
+                'order_id' => $order->id,
+                'jumlah_bayar' => $jumlahBayar1,
+                'sisa_bayar' => $sisaBayar1,
+                'kembalian' => $kembalian1,
+                'metode_pembayaran' => 'cash',
+            ]);
+
+            // Create second payment (remaining amount)
+            $jumlahBayar2 = $sisaBayar1;
+            $sisaBayar2 = 0;
+            $kembalian2 = 0;
+
+            Payment::create([
+                'order_id' => $order->id,
+                'jumlah_bayar' => $jumlahBayar2,
+                'sisa_bayar' => $sisaBayar2,
+                'kembalian' => $kembalian2,
+                'metode_pembayaran' => 'bank',
+            ]);
+
+            // Update order status
+            $order->update(['status_pembayaran' => 'lunas']);
+        }
     }
 } 

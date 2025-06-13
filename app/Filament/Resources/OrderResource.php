@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\PaymentsRelationManager;
-use App\Filament\Resources\OrderResource\RelationManagers\PaymentDetailsRelationManager;
 use App\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -243,13 +242,6 @@ class OrderResource extends Resource
                         });
                     }),
                 
-                Tables\Columns\TextColumn::make('total_bayar')
-                    ->label('Total Bayar')
-                    ->money('IDR')
-                    ->getStateUsing(function (Order $record) {
-                        return $record->payments->sum('jumlah_bayar');
-                    }),
-                
                 Tables\Columns\TextColumn::make('status_transaksi')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -260,22 +252,6 @@ class OrderResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('Status Transaksi'),
-                
-                Tables\Columns\TextColumn::make('status_pembayaran')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'belum_bayar' => 'Belum Bayar',
-                        'cicilan' => 'Cicilan',
-                        'lunas' => 'Lunas',
-                    })
-                    ->color(fn (string $state): string => match ($state) {
-                        'belum_bayar' => 'danger',
-                        'cicilan' => 'warning',
-                        'lunas' => 'success',
-                    })
-                    ->searchable()
-                    ->sortable()
-                    ->label('Status Pembayaran'),
                 
                 Tables\Columns\TextColumn::make('tanggal_order')
                     ->date()
@@ -316,7 +292,6 @@ class OrderResource extends Resource
     {
         return [
             PaymentsRelationManager::class,
-            PaymentDetailsRelationManager::class,
         ];
     }
 

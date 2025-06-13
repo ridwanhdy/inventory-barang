@@ -31,11 +31,23 @@ class PaymentsRelationManager extends RelationManager
                         $totalHarga = $order->orderDetails->sum(function ($detail) {
                             return $detail->quantity * $detail->harga;
                         });
+                        
+                        // Get total of previous payments excluding current payment
+                        $currentPaymentId = $get('id');
+                        $previousPayments = $order->payments()
+                            ->when($currentPaymentId, fn($query) => $query->where('id', '!=', $currentPaymentId))
+                            ->sum('jumlah_bayar');
+                            
                         if ($totalHarga && $state) {
-                            $sisaBayar = max(0, $totalHarga - $state);
+                            $sisaBayar = max(0, $totalHarga - ($previousPayments + $state));
                             $set('sisa_bayar', $sisaBayar);
+                            
+                            // Calculate kembalian
+                            $kembalian = max(0, $state - ($totalHarga - $previousPayments));
+                            $set('kembalian', $kembalian);
                         }
                     }),
+                
                 Forms\Components\TextInput::make('sisa_bayar')
                     ->required()
                     ->numeric()
@@ -48,13 +60,33 @@ class PaymentsRelationManager extends RelationManager
                         $totalHarga = $order->orderDetails->sum(function ($detail) {
                             return $detail->quantity * $detail->harga;
                         });
+                        
+                        // Get total of previous payments excluding current payment
+                        $currentPaymentId = $get('id');
+                        $previousPayments = $order->payments()
+                            ->when($currentPaymentId, fn($query) => $query->where('id', '!=', $currentPaymentId))
+                            ->sum('jumlah_bayar');
+                            
                         $jumlahBayar = $get('jumlah_bayar');
                         if ($totalHarga && $jumlahBayar) {
-                            $sisaBayar = max(0, $totalHarga - $jumlahBayar);
+                            $sisaBayar = max(0, $totalHarga - ($previousPayments + $jumlahBayar));
                             $set('sisa_bayar', $sisaBayar);
+                            
+                            // Calculate kembalian
+                            $kembalian = max(0, $jumlahBayar - ($totalHarga - $previousPayments));
+                            $set('kembalian', $kembalian);
                         }
                     }),
-                    Forms\Components\Select::make('metode_pembayaran')
+
+                Forms\Components\TextInput::make('kembalian')
+                    ->required()
+                    ->numeric()
+                    ->disabled()
+                    ->dehydrated()
+                    ->label('Kembalian')
+                    ->prefix('Rp'),
+
+                Forms\Components\Select::make('metode_pembayaran')
                     ->options([
                         'cash' => 'Cash',
                         'bank' => 'Bank',
@@ -78,6 +110,10 @@ class PaymentsRelationManager extends RelationManager
                     ->money('IDR')
                     ->sortable()
                     ->label('Sisa Bayar'),
+                Tables\Columns\TextColumn::make('kembalian')
+                    ->money('IDR')
+                    ->sortable()
+                    ->label('Kembalian'),
                 Tables\Columns\TextColumn::make('metode_pembayaran')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -92,20 +128,101 @@ class PaymentsRelationManager extends RelationManager
                     ->label('Metode Pembayaran'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tanggal Bayar')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Tambah Pembayaran'),
+                    ->label('Tambah Pembayaran')
+                    ->visible(function () {
+                        $order = $this->getOwnerRecord();
+                        $totalHarga = $order->orderDetails->sum(function ($detail) {
+                            return $detail->quantity * $detail->harga;
+                        });
+                        $totalBayar = $order->payments()->sum('jumlah_bayar');
+                        return $totalBayar < $totalHarga;
+                    })
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $order = $this->getOwnerRecord();
+                        $totalHarga = $order->orderDetails->sum(function ($detail) {
+                            return $detail->quantity * $detail->harga;
+                        });
+                        
+                        // Get total of previous payments
+                        $previousPayments = $order->payments()->sum('jumlah_bayar');
+                        
+                        $data['sisa_bayar'] = max(0, $totalHarga - ($previousPayments + $data['jumlah_bayar']));
+                        $data['kembalian'] = max(0, $data['jumlah_bayar'] - ($totalHarga - $previousPayments));
+                        return $data;
+                    })
+                    ->after(function ($record) {
+                        $order = $this->getOwnerRecord();
+                        $totalHarga = $order->orderDetails->sum(function ($detail) {
+                            return $detail->quantity * $detail->harga;
+                        });
+                        $totalBayar = $order->payments()->sum('jumlah_bayar');
+                        
+                        // Update status pembayaran
+                        if ($totalBayar >= $totalHarga) {
+                            $order->update(['status_pembayaran' => 'lunas']);
+                        } else if ($totalBayar > 0) {
+                            $order->update(['status_pembayaran' => 'cicilan']);
+                        }
+                    }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->mutateFormDataUsing(function (array $data, $record): array {
+                        $order = $this->getOwnerRecord();
+                        $totalHarga = $order->orderDetails->sum(function ($detail) {
+                            return $detail->quantity * $detail->harga;
+                        });
+                        
+                        // Get total of previous payments excluding current payment
+                        $previousPayments = $order->payments()
+                            ->where('id', '!=', $record->id)
+                            ->sum('jumlah_bayar');
+                        
+                        $data['sisa_bayar'] = max(0, $totalHarga - ($previousPayments + $data['jumlah_bayar']));
+                        $data['kembalian'] = max(0, $data['jumlah_bayar'] - ($totalHarga - $previousPayments));
+                        return $data;
+                    })
+                    ->after(function ($record) {
+                        $order = $this->getOwnerRecord();
+                        $totalHarga = $order->orderDetails->sum(function ($detail) {
+                            return $detail->quantity * $detail->harga;
+                        });
+                        $totalBayar = $order->payments()->sum('jumlah_bayar');
+                        
+                        // Update status pembayaran
+                        if ($totalBayar >= $totalHarga) {
+                            $order->update(['status_pembayaran' => 'lunas']);
+                        } else if ($totalBayar > 0) {
+                            $order->update(['status_pembayaran' => 'cicilan']);
+                        }
+                    }),
                 Tables\Actions\DeleteAction::make()
-                    ->label('Hapus'),
+                    ->label('Hapus')
+                    ->after(function ($record) {
+                        $order = $this->getOwnerRecord();
+                        $totalHarga = $order->orderDetails->sum(function ($detail) {
+                            return $detail->quantity * $detail->harga;
+                        });
+                        $totalBayar = $order->payments()->sum('jumlah_bayar');
+                        
+                        // Update status pembayaran
+                        if ($totalBayar >= $totalHarga) {
+                            $order->update(['status_pembayaran' => 'lunas']);
+                        } else if ($totalBayar > 0) {
+                            $order->update(['status_pembayaran' => 'cicilan']);
+                        } else {
+                            $order->update(['status_pembayaran' => 'belum_bayar']);
+                        }
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

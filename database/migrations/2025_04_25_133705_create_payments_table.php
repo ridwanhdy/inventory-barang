@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->integer('jumlah_bayar');
             $table->integer('sisa_bayar');
+            $table->integer('kembalian');
             $table->enum('metode_pembayaran', ['cash', 'bank'])->default('cash');
             $table->timestamps();
         });
