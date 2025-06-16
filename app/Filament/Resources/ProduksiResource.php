@@ -38,7 +38,7 @@ class ProduksiResource extends Resource
                 ->required(),
             Forms\Components\TextInput::make('jumlah_produksi')->numeric()->required(),
             Forms\Components\DatePicker::make('produksi_mulai')->required(),
-            Forms\Components\DatePicker::make('produksi_selesai'),
+            Forms\Components\DatePicker::make('produksi_selesai')->required(),
             Forms\Components\Select::make('status')
                 ->options([
                     'Proses' => 'Proses',

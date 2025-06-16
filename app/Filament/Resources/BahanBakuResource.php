@@ -76,13 +76,15 @@ class BahanBakuResource extends Resource
                     ->label('Nama Bahan')
                     ->searchable()
                     ->sortable(),
-                
-                TextColumn::make('satuan.nama_satuan')
-                    ->label('Satuan'),
 
                 TextColumn::make('stok')
                     ->label('Stok')
                     ->sortable(),
+                
+                TextColumn::make('satuan.nama_satuan')
+                    ->label('Satuan'),
+
+                
 
                 TextColumn::make('stok_minimal')
                     ->label('Stok Minimal')
