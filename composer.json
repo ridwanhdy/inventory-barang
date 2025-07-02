@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
+        "charlieuki/receiptprinter": "^1.2",
         "filament/filament": "3.3",
         "filament/forms": "3.3",
         "laravel/framework": "^12.0",

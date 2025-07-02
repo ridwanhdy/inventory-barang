@@ -17,9 +17,9 @@ class Payment extends Model
 
     protected $casts = [
         'tanggal_bayar' => 'date',
-        'jumlah_bayar' => 'decimal:2',
-        'sisa_bayar' => 'decimal:2',
-        'kembalian' => 'decimal:2',
+        'jumlah_bayar' => 'integer',
+        'sisa_bayar' => 'integer',
+        'kembalian' => 'integer',
     ];
 
     public function order()

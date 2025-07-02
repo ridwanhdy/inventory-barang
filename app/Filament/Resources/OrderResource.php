@@ -274,9 +274,9 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('print')
-                    ->label('Print Invoice')
+                    ->label('Print Struk')
                     ->icon('heroicon-o-printer')
-                    ->url(fn (Order $record): string => route('filament.admin.resources.orders.print', ['record' => $record]))
+                    ->url(fn (Order $record): string => url('/admin/order/' . $record->id . '/print-struk'))
                     ->openUrlInNewTab(),
                 Tables\Actions\DeleteAction::make()
                     ->label('Hapus'),

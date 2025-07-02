@@ -13,6 +13,11 @@ class EditOrder extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('print-struk')
+                ->label('Print Struk')
+                ->icon('heroicon-o-printer')
+                ->url(fn () => url('/admin/order/' . $this->record->id . '/print-struk'))
+                ->openUrlInNewTab(),
             Actions\DeleteAction::make()
                 ->label('Hapus'),
         ];
