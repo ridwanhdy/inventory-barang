@@ -10,9 +10,10 @@ class OrderPrintController extends Controller
     public function printStruk($orderId)
     {
         $order = Order::with(['customer', 'orderDetails.product', 'user'])->findOrFail($orderId);
-
+        
         $mid = 'INV-' . $order->id;
-        $store_name = 'MANDIRI KONVEKSI';
+        $store_name = 'MANDIRI
+        KONVEKSI';
         $store_address = 'Jl. K.H. Abdul Wakid RT.15/RW.03, Banaran, Kerik, Magetan';
         $store_phone = '0821-4362-9650';
         $store_email = 'mandirikonveksi@gmail.com';
