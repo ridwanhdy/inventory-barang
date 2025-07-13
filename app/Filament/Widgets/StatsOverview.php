@@ -36,11 +36,11 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-o-users')
                 ->color('primary'),
 
-            Stat::make('Bahan Baku Hampir Habis',
-                BahanBaku::whereColumn('stok', '<=', 'stok_minimal')->count() . ' item')
-                ->description('Perlu restock')
-                ->descriptionIcon('heroicon-o-exclamation-triangle')
-                ->color('danger'),
+            // Stat::make('Bahan Baku Hampir Habis',
+            //     BahanBaku::whereColumn('stok', '<=', 'stok_minimal')->count() . ' item')
+            //     ->description('Perlu restock')
+            //     ->descriptionIcon('heroicon-o-exclamation-triangle')
+            //     ->color('danger'),
         ];
     }
 } 

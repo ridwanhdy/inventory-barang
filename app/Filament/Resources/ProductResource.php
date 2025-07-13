@@ -22,10 +22,10 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static ?string $navigationGroup = 'Manajemen Produk';
+    protected static ?string $navigationGroup = 'Master Data';
     protected static ?string $navigationLabel = 'Produk';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 0;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
     public static function shouldRegisterNavigation(): bool
@@ -38,10 +38,6 @@ class ProductResource extends Resource
         return $form
             ->schema([
                 TextInput::make('nama_product')->required(),
-                Select::make('jenis_id')
-                    ->label('Jenis')
-                    ->relationship('jenis', 'nama_jenis')
-                    ->required(),
                 Select::make('kategori_id')
                     ->label('Kategori')
                     ->relationship('kategori', 'nama_kategori')
@@ -53,7 +49,6 @@ class ProductResource extends Resource
                 TextInput::make('ukuran')->required(),
                 TextInput::make('warna')->required(),
                 TextInput::make('bahan')->required(),
-                TextInput::make('stok')->disabled()->numeric()->required()->default(0),
                 TextInput::make('harga_jual')->numeric()->required(),
                 FileUpload::make('foto')
                     ->disk('public')
@@ -71,6 +66,7 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['kategori', 'satuan', 'details']))
             ->columns([
                 ImageColumn::make('foto')
                     ->label('Foto Produk')
@@ -80,11 +76,20 @@ class ProductResource extends Resource
                     ->width(50)
                     ->height(50),
                 TextColumn::make('nama_product')->searchable(),
-                TextColumn::make('jenis.nama_jenis'),
                 TextColumn::make('kategori.nama_kategori'),
                 TextColumn::make('satuan.nama_satuan'),
-                TextColumn::make('stok'),
                 TextColumn::make('harga_jual')->money('IDR'),
+                TextColumn::make('details.stok')
+                    ->label('Stok')
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        $state >= 50 => 'success',
+                        $state >= 20 => 'warning',
+                        default => 'danger',
+                    })
+                    ->getStateUsing(function ($record) {
+                        return $record->details->first()?->stok ?? 0;
+                    }),
             ])
             ->filters([
                 //

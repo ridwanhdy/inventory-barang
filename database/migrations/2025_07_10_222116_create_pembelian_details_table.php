@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('bahan_bakus', function (Blueprint $table) {
+        Schema::create('pembelian_details', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_bahan');
-            $table->foreignId('satuan_id')->constrained('satuans')->onDelete('cascade');
-            $table->foreignId('kategori_id')->constrained('kategoris')->onDelete('cascade');
-            $table->enum('jenis', ['bahan baku', 'bahan jadi'])->default('bahan baku');
+            $table->foreignId('pembelian_id')->constrained()->onDelete('cascade');
+            $table->foreignId('bahan_baku_id')->constrained()->onDelete('cascade');
+            $table->integer('quantity');
+            $table->decimal('harga', 15, 2);
+            $table->decimal('subtotal', 15, 2);
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('bahan_bakus');
+        Schema::dropIfExists('pembelian_details');
     }
 };

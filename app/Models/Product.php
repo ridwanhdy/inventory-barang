@@ -3,26 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
     protected $fillable = [
         'nama_product',
-        'jenis_id',
         'kategori_id',
         'satuan_id',
         'ukuran',
         'warna',
         'bahan',
-        'stok',
         'harga_jual',
         'foto',
     ];
-
-    public function jenis()
-    {
-        return $this->belongsTo(Jenis::class);
-    }
 
     public function kategori()
     {
@@ -37,5 +32,10 @@ class Product extends Model
     public function produksi()
     {
         return $this->hasMany(Produksi::class);
+    }
+
+    public function details()
+    {
+        return $this->hasMany(ProductDetail::class);
     }
 }

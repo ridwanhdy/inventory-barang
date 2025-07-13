@@ -20,8 +20,8 @@ class BahanBakuResource extends Resource
 {
     protected static ?string $model = BahanBaku::class;
 
-    protected static ?string $navigationGroup = 'Manajemen Bahan';
-    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationGroup = 'Master Data';
+    protected static ?int $navigationSort = 0;
     protected static ?string $navigationLabel = 'Bahan Baku';
     protected static ?string $navigationIcon = 'heroicon-o-cube';
     protected ?string $heading = 'Bahan Baku';
@@ -38,33 +38,21 @@ class BahanBakuResource extends Resource
                 TextInput::make('nama_bahan')
                     ->label('Nama Bahan')
                     ->required(),
-
                 Select::make('satuan_id')
                     ->label('Satuan')
                     ->relationship('satuan', 'nama_satuan')
                     ->required(),
-
                 Select::make('kategori_id')
                     ->label('Kategori')
                     ->relationship('kategori', 'nama_kategori')
                     ->required(),
-
-                Select::make('jenis_id')
+                Select::make('jenis')
                     ->label('Jenis')
-                    ->relationship('jenis', 'nama_jenis')
+                    ->options([
+                        'bahan baku' => 'Bahan Baku',
+                        'bahan jadi' => 'Bahan Jadi',
+                    ])
                     ->required(),
-
-                TextInput::make('stok')
-                    ->label('Stok')
-                    ->required()
-                    ->numeric()
-                    ->disabled(fn ($record) => $record !== null)
-                    ->dehydrated(fn ($record) => $record === null),
-
-                TextInput::make('stok_minimal')
-                    ->label('Stok Minimal')
-                    ->required()
-                    ->numeric(),
             ]);
     }
 
@@ -77,40 +65,17 @@ class BahanBakuResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('stok')
-                    ->label('Stok')
-                    ->sortable(),
                 
                 TextColumn::make('satuan.nama_satuan')
                     ->label('Satuan'),
 
                 
-
-                TextColumn::make('stok_minimal')
-                    ->label('Stok Minimal')
-                    ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('increaseStock')
-                    ->label('Tambah Stok')
-                    ->icon('heroicon-o-plus')
-                    ->form([
-                        Forms\Components\TextInput::make('amount')
-                            ->label('Jumlah')
-                            ->numeric()
-                            ->required()
-                            ->minValue(1)
-                    ])
-                    ->action(function (BahanBaku $record, array $data): void {
-                        $record->update([
-                            'stok' => $record->stok + $data['amount']
-                        ]);
-                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -122,7 +87,8 @@ class BahanBakuResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            // Tambahkan RelationManager untuk BahanBakuDetail jika sudah ada
+            // RelationManagers\BahanBakuDetailRelationManager::class,
         ];
     }
 

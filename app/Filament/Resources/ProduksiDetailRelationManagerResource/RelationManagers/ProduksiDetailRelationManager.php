@@ -39,7 +39,32 @@ class ProduksiDetailRelationManager extends RelationManager
     }),
                 TextInput::make('jumlah_digunakan') // Jumlah yang digunakan dalam produksi
                     ->numeric()
-                    ->required(),
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                        $bahanBakuId = $get('bahan_baku_id');
+                        if ($bahanBakuId) {
+                            $bahan = \App\Models\BahanBaku::find($bahanBakuId);
+                            if ($bahan && $state > $bahan->stok) {
+                                Notification::make()
+                                    ->title('Stok Bahan Baku Tidak Cukup')
+                                    ->danger()
+                                    ->send();
+                                $set('jumlah_digunakan', null);
+                            }
+                        }
+                    })
+                    ->rule(function (callable $get) {
+                        return function ($attribute, $value, $fail) use ($get) {
+                            $bahanBakuId = $get('bahan_baku_id');
+                            if ($bahanBakuId) {
+                                $bahan = \App\Models\BahanBaku::find($bahanBakuId);
+                                if ($bahan && $value > $bahan->stok) {
+                                    $fail('Stok bahan baku tidak cukup.');
+                                }
+                            }
+                        };
+                    }),
                     TextInput::make('satuan')
                     ->label('Satuan')
                     ->disabled()

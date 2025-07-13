@@ -9,7 +9,7 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateSatuan extends CreateRecord
 {
     protected static string $resource = SatuanResource::class;
-
+    
     protected function getFormActions(): array
     {
         return [

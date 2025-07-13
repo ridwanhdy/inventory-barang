@@ -2,25 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers\PaymentsRelationManager;
-use App\Models\Order;
+use App\Filament\Resources\PembelianResource\Pages;
+use App\Models\Pembelian;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class OrderResource extends Resource
+class PembelianResource extends Resource
 {
-    protected static ?string $model = Order::class;
+    protected static ?string $model = Pembelian::class;
 
-    protected static ?string $navigationLabel = 'Penjualan';
+    protected static ?string $navigationLabel = 'Pembelian';
     protected static ?string $navigationGroup = 'Transaksi';
-    protected static ?int $navigationSort = 4;
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static ?int $navigationSort = 5;
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -32,94 +29,64 @@ class OrderResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Wizard::make([
-                    Forms\Components\Wizard\Step::make('Informasi Order')
+                    Forms\Components\Wizard\Step::make('Informasi Pembelian')
                         ->schema([
-                            Forms\Components\Select::make('customer_id')
-                                ->relationship('customer', 'nama')
+                            Forms\Components\Select::make('pemasok_id')
+                                ->relationship('pemasok', 'nama_pemasok')
                                 ->searchable()
                                 ->preload()
                                 ->required()
-                                ->label('Customer'),
+                                ->label('Pemasok'),
                             
-                            Forms\Components\Select::make('users_id')
-                                ->relationship('user', 'name')
-                                ->searchable()
-                                ->preload()
+                            Forms\Components\DatePicker::make('tanggal_pembelian')
                                 ->required()
-                                ->label('User')
-                                ->default(auth()->id())
-                                ->disabled()
-                                ->dehydrated(),
-                            
-                            Forms\Components\DatePicker::make('tanggal_order')
-                                ->required()
-                                ->label('Tanggal Order')
+                                ->label('Tanggal Pembelian')
                                 ->default(now()),
 
-                            Forms\Components\Radio::make('status_transaksi')
-                                ->options([
-                                    'proses' => 'Proses',
-                                    'batal' => 'Batal',
-                                    'selesai' => 'Selesai',
-                                ])
-                                ->required()
-                                ->label('Status Transaksi')
-                                ->inline()
-                                ->default('proses')
-                                ->descriptions([
-                                    'proses' => 'Order sedang diproses',
-                                    'batal' => 'Order dibatalkan',
-                                    'selesai' => 'Order selesai',
-                                ]),
-
-                            Forms\Components\Radio::make('status_pembayaran')
-                                ->options([
-                                    'belum_bayar' => 'Belum Bayar',
-                                    'cicilan' => 'Cicilan',
-                                    'lunas' => 'Lunas',
-                                ])
-                                ->required()
-                                ->label('Status Pembayaran')
-                                ->inline()
-                                ->default('belum_bayar')
-                                ->descriptions([
-                                    'belum_bayar' => 'Belum ada pembayaran',
-                                    'cicilan' => 'Pembayaran secara cicilan',
-                                    'lunas' => 'Pembayaran sudah lunas',
-                                ]),
+                            Forms\Components\Textarea::make('catatan')
+                                ->label('Catatan')
+                                ->rows(3)
+                                ->placeholder('Catatan tambahan untuk pembelian ini...'),
                         ])
-                        ->columns(3)
+                        ->columns(2)
                         ->columnSpan('full'),
 
-                    Forms\Components\Wizard\Step::make('Tambah Product')
+                    Forms\Components\Wizard\Step::make('Tambah Bahan Baku')
                         ->schema([
-                            Forms\Components\Repeater::make('orderDetails')
+                            Forms\Components\Repeater::make('pembelianDetails')
                                 ->relationship()
                                 ->schema([
-                                    Forms\Components\Select::make('product_id')
-                                        ->relationship('product', 'nama_product')
+                                    Forms\Components\Select::make('bahan_baku_id')
+                                        ->relationship('bahanBaku', 'nama_bahan')
                                         ->searchable()
                                         ->preload()
                                         ->required()
-                                        ->label('Product')
+                                        ->label('Bahan Baku')
                                         ->live()
                                         ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                                             if ($state) {
-                                                $product = \App\Models\Product::find($state);
-                                                if ($product) {
-                                                    $set('harga', $product->harga_jual);
-                                                    // Update subtotal when product changes
+                                                $bahanBaku = \App\Models\BahanBaku::find($state);
+                                                if ($bahanBaku) {
+                                                    // Set satuan
+                                                    $set('satuan', $bahanBaku->satuan->nama_satuan);
+                                                    // Set default harga (bisa diubah manual)
+                                                    $set('harga', 0);
+                                                    // Update subtotal when bahan baku changes
                                                     $quantity = $get('quantity');
                                                     if ($quantity) {
-                                                        $set('subtotal', $quantity * $product->harga_jual);
+                                                        $set('subtotal', $quantity * 0);
                                                         // Update total immediately
-                                                        $orderDetails = $get('../../orderDetails');
-                                                        if ($orderDetails) {
-                                                            $total = collect($orderDetails)->sum('subtotal');
+                                                        $pembelianDetails = $get('../../pembelianDetails');
+                                                        if ($pembelianDetails) {
+                                                            $total = collect($pembelianDetails)->sum('subtotal');
                                                             $set('../../total_harga', $total);
                                                         }
                                                     }
+                                                } else {
+                                                    $set('satuan', '');
                                                 }
+                                            } else {
+                                                $set('satuan', '');
                                             }
                                         }),
                                     
@@ -134,28 +101,35 @@ class OrderResource extends Resource
                                             if ($state && $harga) {
                                                 $set('subtotal', $state * $harga);
                                                 // Update total immediately
-                                                $orderDetails = $get('../../orderDetails');
-                                                if ($orderDetails) {
-                                                    $total = collect($orderDetails)->sum('subtotal');
+                                                $pembelianDetails = $get('../../pembelianDetails');
+                                                if ($pembelianDetails) {
+                                                    $total = collect($pembelianDetails)->sum('subtotal');
                                                     $set('../../total_harga', $total);
                                                 }
                                             }
                                         }),
                                     
+                                    Forms\Components\TextInput::make('satuan')
+                                        ->label('Satuan')
+                                        ->disabled()
+                                        ->dehydrated(false)
+                                        ->live()
+                                        ->visible(fn (callable $get) => $get('bahan_baku_id') !== null),
+                                    
                                     Forms\Components\TextInput::make('harga')
                                         ->numeric()
-                                        ->disabled()
-                                        ->dehydrated()
-                                        ->label('Harga Product')
+                                        ->required()
+                                        ->label('Harga Satuan')
+                                        ->prefix('Rp')
                                         ->live()
                                         ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                                             $quantity = $get('quantity');
                                             if ($state && $quantity) {
                                                 $set('subtotal', $state * $quantity);
                                                 // Update total immediately
-                                                $orderDetails = $get('../../orderDetails');
-                                                if ($orderDetails) {
-                                                    $total = collect($orderDetails)->sum('subtotal');
+                                                $pembelianDetails = $get('../../pembelianDetails');
+                                                if ($pembelianDetails) {
+                                                    $total = collect($pembelianDetails)->sum('subtotal');
                                                     $set('../../total_harga', $total);
                                                 }
                                             }
@@ -170,17 +144,17 @@ class OrderResource extends Resource
                                         ->live()
                                         ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                                             // Update total when subtotal changes
-                                            $orderDetails = $get('../../orderDetails');
-                                            if ($orderDetails) {
-                                                $total = collect($orderDetails)->sum('subtotal');
+                                            $pembelianDetails = $get('../../pembelianDetails');
+                                            if ($pembelianDetails) {
+                                                $total = collect($pembelianDetails)->sum('subtotal');
                                                 $set('../../total_harga', $total);
                                             }
                                         }),
                                 ])
                                 ->columns(4)
                                 ->defaultItems(1)
-                                ->addActionLabel('Tambah Product')
-                                ->label('Detail Order')
+                                ->addActionLabel('Tambah Bahan Baku')
+                                ->label('Detail Pembelian')
                                 ->required()
                                 ->minItems(1)
                                 ->live()
@@ -200,9 +174,9 @@ class OrderResource extends Resource
                                 ->live()
                                 ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
                                     // Calculate initial total when form is loaded
-                                    $orderDetails = $get('orderDetails');
-                                    if ($orderDetails) {
-                                        $total = collect($orderDetails)->sum('subtotal');
+                                    $pembelianDetails = $get('pembelianDetails');
+                                    if ($pembelianDetails) {
+                                        $total = collect($pembelianDetails)->sum('subtotal');
                                         $set('total_harga', $total);
                                     }
                                 }),
@@ -218,52 +192,38 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('customer.nama')
+                Tables\Columns\TextColumn::make('pemasok.nama_pemasok')
                     ->searchable()
                     ->sortable()
-                    ->label('Customer'),
+                    ->label('Pemasok'),
                 
-                Tables\Columns\TextColumn::make('orderDetails.product.nama_product')
+                Tables\Columns\TextColumn::make('pembelianDetails.bahanBaku.nama_bahan')
                     ->listWithLineBreaks()
-                    ->label('Products'),
+                    ->label('Bahan Baku'),
                 
                 Tables\Columns\TextColumn::make('total_quantity')
                     ->label('Total Quantity')
-                    ->getStateUsing(function (Order $record) {
-                        return $record->orderDetails->sum('quantity');
+                    ->getStateUsing(function (Pembelian $record) {
+                        return $record->pembelianDetails->sum('quantity');
                     }),
                 
                 Tables\Columns\TextColumn::make('total_harga')
                     ->label('Total Harga')
                     ->money('IDR')
-                    ->getStateUsing(function (Order $record) {
-                        return $record->orderDetails->sum(function ($detail) {
+                    ->getStateUsing(function (Pembelian $record) {
+                        return $record->pembelianDetails->sum(function ($detail) {
                             return $detail->quantity * $detail->harga;
                         });
                     }),
                 
-                Tables\Columns\TextColumn::make('status_transaksi')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'proses' => 'warning',
-                        'batal' => 'danger',
-                        'selesai' => 'success',
-                    })
-                    ->searchable()
-                    ->sortable()
-                    ->label('Status Transaksi'),
+
                 
-                Tables\Columns\TextColumn::make('tanggal_order')
+                Tables\Columns\TextColumn::make('tanggal_pembelian')
                     ->date()
                     ->sortable()
-                    ->label('Tanggal Order'),
+                    ->label('Tanggal Pembelian'),
                 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                
-                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -272,12 +232,8 @@ class OrderResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('print')
-                    ->label('Print Struk')
-                    ->icon('heroicon-o-printer')
-                    ->url(fn (Order $record): string => url('/admin/order/' . $record->id . '/print-struk'))
-                    ->openUrlInNewTab(),
                 Tables\Actions\DeleteAction::make()
                     ->label('Hapus'),
             ])
@@ -291,17 +247,17 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            PaymentsRelationManager::class,
+            //
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrders::route('/'),
-            'create' => Pages\CreateOrder::route('/create'),
-            'edit' => Pages\EditOrder::route('/{record}/edit'),
-            'print' => Pages\PrintInvoice::route('/{record}/print'),
+            'index' => Pages\ListPembelians::route('/'),
+            'create' => Pages\CreatePembelian::route('/create'),
+            'view' => Pages\ViewPembelian::route('/{record}'),
+            'edit' => Pages\EditPembelian::route('/{record}/edit'),
         ];
     }
 }
