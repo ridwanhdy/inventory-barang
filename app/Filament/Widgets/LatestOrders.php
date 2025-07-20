@@ -22,7 +22,7 @@ class LatestOrders extends TableWidget
     protected function getTableColumns(): array
     {
         return [
-            TextColumn::make('customer.nama')
+            TextColumn::make('nama_customer')
                 ->label('Customer')
                 ->searchable(),
             TextColumn::make('total_harga')

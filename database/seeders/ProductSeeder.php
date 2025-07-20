@@ -12,6 +12,7 @@ class ProductSeeder extends Seeder
         $products = [
             [
                 'nama_product' => 'Kaos Polos Premium',
+                'jenis' => 'Kaos',
                 'kategori_id' => 1, // Kaos Polos
                 'satuan_id' => 1, // Pcs
                 'ukuran' => 'M',
@@ -22,6 +23,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'nama_product' => 'Kaos Sablon Custom',
+                'jenis' => 'Kaos',
                 'kategori_id' => 2, // Kaos Sablon
                 'satuan_id' => 1, // Pcs
                 'ukuran' => 'L',
@@ -32,6 +34,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'nama_product' => 'Jaket Hoodie Basic',
+                'jenis' => 'Jaket',
                 'kategori_id' => 3, // Jaket Hoodie
                 'satuan_id' => 1, // Pcs
                 'ukuran' => 'XL',
@@ -42,6 +45,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'nama_product' => 'Jaket Bomber Premium',
+                'jenis' => 'Jaket',
                 'kategori_id' => 4, // Jaket Bomber
                 'satuan_id' => 1, // Pcs
                 'ukuran' => 'L',
@@ -52,6 +56,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'nama_product' => 'Jaket Varsity Classic',
+                'jenis' => 'Jaket',
                 'kategori_id' => 5, // Jaket Varsity
                 'satuan_id' => 1, // Pcs
                 'ukuran' => 'M',

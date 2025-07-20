@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
-        'customer_id',
+        'nama_customer',
         'users_id',
         'tanggal_order',
         'status_transaksi',
@@ -22,11 +22,6 @@ class Order extends Model
     protected $casts = [
         'tanggal_order' => 'date',
     ];
-
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
 
     public function user()
     {

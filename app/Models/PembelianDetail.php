@@ -20,6 +20,17 @@ class PembelianDetail extends Model
         'subtotal' => 'decimal:2',
     ];
 
+    protected static function booted()
+    {
+        static::created(function ($detail) {
+            // Cari BahanBakuDetail terkait
+            $bahanBakuDetail = \App\Models\BahanBakuDetail::where('bahan_baku_id', $detail->bahan_baku_id)->first();
+            if ($bahanBakuDetail) {
+                $bahanBakuDetail->increment('stok', $detail->quantity);
+            }
+        });
+    }
+
     public function pembelian(): BelongsTo
     {
         return $this->belongsTo(Pembelian::class);

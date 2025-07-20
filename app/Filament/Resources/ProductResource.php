@@ -66,7 +66,6 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['kategori', 'satuan', 'details']))
             ->columns([
                 ImageColumn::make('foto')
                     ->label('Foto Produk')
@@ -79,17 +78,6 @@ class ProductResource extends Resource
                 TextColumn::make('kategori.nama_kategori'),
                 TextColumn::make('satuan.nama_satuan'),
                 TextColumn::make('harga_jual')->money('IDR'),
-                TextColumn::make('details.stok')
-                    ->label('Stok')
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state >= 50 => 'success',
-                        $state >= 20 => 'warning',
-                        default => 'danger',
-                    })
-                    ->getStateUsing(function ($record) {
-                        return $record->details->first()?->stok ?? 0;
-                    }),
             ])
             ->filters([
                 //

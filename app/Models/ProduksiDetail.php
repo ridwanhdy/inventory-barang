@@ -26,19 +26,11 @@ class ProduksiDetail extends Model
     protected static function booted()
     {
         static::creating(function ($detail) {
-            $bahan = $detail->bahanBaku;
-
-            if ($bahan->stok < $detail->jumlah_digunakan) {
-                Notification::make()
-                    ->title('Stok Bahan Baku Tidak Cukup')
-                    ->danger()
-                    ->send();
-
-                return false; // Membatalkan proses penyimpanan
+            // Ambil stok dari BahanBakuDetail dan langsung kurangi tanpa validasi
+            $bahanBakuDetail = \App\Models\BahanBakuDetail::where('bahan_baku_id', $detail->bahan_baku_id)->first();
+            if ($bahanBakuDetail) {
+                $bahanBakuDetail->decrement('stok', $detail->jumlah_digunakan);
             }
-
-            // Jika cukup, kurangi stok
-            $bahan->decrement('stok', $detail->jumlah_digunakan);
         });
     }
 }

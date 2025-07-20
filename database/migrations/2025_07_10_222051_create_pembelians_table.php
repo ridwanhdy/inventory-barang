@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pemasok_id')->constrained()->onDelete('cascade');
             $table->date('tanggal_pembelian');
-            $table->decimal('total_harga', 15, 2)->default(0);
             $table->text('catatan')->nullable();
             $table->timestamps();
         });

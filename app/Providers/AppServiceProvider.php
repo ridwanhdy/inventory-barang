@@ -6,9 +6,11 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\BahanBaku;
+use App\Models\ProductDetail;
 use App\Observers\OrderObserver;
 use App\Observers\ProductObserver;
 use App\Observers\BahanBakuObserver;
+use App\Observers\ProductDetailObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,5 +30,6 @@ class AppServiceProvider extends ServiceProvider
         Order::observe(OrderObserver::class);
         Product::observe(ProductObserver::class);
         BahanBaku::observe(BahanBakuObserver::class);
+        ProductDetail::observe(ProductDetailObserver::class);
     }
 }

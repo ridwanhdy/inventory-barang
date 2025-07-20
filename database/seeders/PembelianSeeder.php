@@ -19,19 +19,16 @@ class PembelianSeeder extends Seeder
             [
                 'pemasok_id' => 1,
                 'tanggal_pembelian' => now()->subDays(10),
-                'total_harga' => 0,
                 'catatan' => 'Pembelian bahan baku untuk stok awal',
             ],
             [
                 'pemasok_id' => 2,
                 'tanggal_pembelian' => now()->subDays(7),
-                'total_harga' => 0,
                 'catatan' => 'Pembelian untuk produksi batch berikutnya',
             ],
             [
                 'pemasok_id' => 3,
                 'tanggal_pembelian' => now()->subDays(3),
-                'total_harga' => 0,
                 'catatan' => 'Pembelian bahan baku premium',
             ],
         ];
@@ -44,19 +41,15 @@ class PembelianSeeder extends Seeder
             $bahanBakuId = $bahanBakuIds[$index % count($bahanBakuIds)];
             
             $quantity = rand(10, 100);
-            $harga = rand(5000, 50000);
-            $subtotal = $quantity * $harga;
             
             PembelianDetail::create([
                 'pembelian_id' => $pembelianRecord->id,
                 'bahan_baku_id' => $bahanBakuId,
                 'quantity' => $quantity,
-                'harga' => $harga,
-                'subtotal' => $subtotal,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
             
-            // Update total harga
-            $pembelianRecord->update(['total_harga' => $subtotal]);
         }
 
         $this->command->info('Pembelian data seeded successfully!');

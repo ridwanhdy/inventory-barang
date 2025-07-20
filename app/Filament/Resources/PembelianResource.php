@@ -37,12 +37,10 @@ class PembelianResource extends Resource
                                 ->preload()
                                 ->required()
                                 ->label('Pemasok'),
-                            
                             Forms\Components\DatePicker::make('tanggal_pembelian')
                                 ->required()
                                 ->label('Tanggal Pembelian')
                                 ->default(now()),
-
                             Forms\Components\Textarea::make('catatan')
                                 ->label('Catatan')
                                 ->rows(3)
@@ -50,7 +48,6 @@ class PembelianResource extends Resource
                         ])
                         ->columns(2)
                         ->columnSpan('full'),
-
                     Forms\Components\Wizard\Step::make('Tambah Bahan Baku')
                         ->schema([
                             Forms\Components\Repeater::make('pembelianDetails')
@@ -67,21 +64,7 @@ class PembelianResource extends Resource
                                             if ($state) {
                                                 $bahanBaku = \App\Models\BahanBaku::find($state);
                                                 if ($bahanBaku) {
-                                                    // Set satuan
                                                     $set('satuan', $bahanBaku->satuan->nama_satuan);
-                                                    // Set default harga (bisa diubah manual)
-                                                    $set('harga', 0);
-                                                    // Update subtotal when bahan baku changes
-                                                    $quantity = $get('quantity');
-                                                    if ($quantity) {
-                                                        $set('subtotal', $quantity * 0);
-                                                        // Update total immediately
-                                                        $pembelianDetails = $get('../../pembelianDetails');
-                                                        if ($pembelianDetails) {
-                                                            $total = collect($pembelianDetails)->sum('subtotal');
-                                                            $set('../../total_harga', $total);
-                                                        }
-                                                    }
                                                 } else {
                                                     $set('satuan', '');
                                                 }
@@ -89,97 +72,26 @@ class PembelianResource extends Resource
                                                 $set('satuan', '');
                                             }
                                         }),
-                                    
                                     Forms\Components\TextInput::make('quantity')
                                         ->numeric()
                                         ->required()
                                         ->minValue(1)
                                         ->label('Quantity')
-                                        ->live()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                            $harga = $get('harga');
-                                            if ($state && $harga) {
-                                                $set('subtotal', $state * $harga);
-                                                // Update total immediately
-                                                $pembelianDetails = $get('../../pembelianDetails');
-                                                if ($pembelianDetails) {
-                                                    $total = collect($pembelianDetails)->sum('subtotal');
-                                                    $set('../../total_harga', $total);
-                                                }
-                                            }
-                                        }),
-                                    
+                                        ->live(),
                                     Forms\Components\TextInput::make('satuan')
                                         ->label('Satuan')
                                         ->disabled()
                                         ->dehydrated(false)
                                         ->live()
                                         ->visible(fn (callable $get) => $get('bahan_baku_id') !== null),
-                                    
-                                    Forms\Components\TextInput::make('harga')
-                                        ->numeric()
-                                        ->required()
-                                        ->label('Harga Satuan')
-                                        ->prefix('Rp')
-                                        ->live()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                            $quantity = $get('quantity');
-                                            if ($state && $quantity) {
-                                                $set('subtotal', $state * $quantity);
-                                                // Update total immediately
-                                                $pembelianDetails = $get('../../pembelianDetails');
-                                                if ($pembelianDetails) {
-                                                    $total = collect($pembelianDetails)->sum('subtotal');
-                                                    $set('../../total_harga', $total);
-                                                }
-                                            }
-                                        }),
-                                    
-                                    Forms\Components\TextInput::make('subtotal')
-                                        ->numeric()
-                                        ->disabled()
-                                        ->dehydrated()
-                                        ->label('Subtotal')
-                                        ->prefix('Rp')
-                                        ->live()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                            // Update total when subtotal changes
-                                            $pembelianDetails = $get('../../pembelianDetails');
-                                            if ($pembelianDetails) {
-                                                $total = collect($pembelianDetails)->sum('subtotal');
-                                                $set('../../total_harga', $total);
-                                            }
-                                        }),
                                 ])
-                                ->columns(4)
+                                ->columns(3)
                                 ->defaultItems(1)
                                 ->addActionLabel('Tambah Bahan Baku')
                                 ->label('Detail Pembelian')
                                 ->required()
                                 ->minItems(1)
-                                ->live()
-                                ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                    if ($state) {
-                                        $total = collect($state)->sum('subtotal');
-                                        $set('total_harga', $total);
-                                    }
-                                }),
-                            
-                            Forms\Components\TextInput::make('total_harga')
-                                ->numeric()
-                                ->disabled()
-                                ->dehydrated()
-                                ->label('Total Harga')
-                                ->prefix('Rp')
-                                ->live()
-                                ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
-                                    // Calculate initial total when form is loaded
-                                    $pembelianDetails = $get('pembelianDetails');
-                                    if ($pembelianDetails) {
-                                        $total = collect($pembelianDetails)->sum('subtotal');
-                                        $set('total_harga', $total);
-                                    }
-                                }),
+                                ->live(),
                         ])
                         ->columnSpan('full'),
                 ])
@@ -206,17 +118,6 @@ class PembelianResource extends Resource
                     ->getStateUsing(function (Pembelian $record) {
                         return $record->pembelianDetails->sum('quantity');
                     }),
-                
-                Tables\Columns\TextColumn::make('total_harga')
-                    ->label('Total Harga')
-                    ->money('IDR')
-                    ->getStateUsing(function (Pembelian $record) {
-                        return $record->pembelianDetails->sum(function ($detail) {
-                            return $detail->quantity * $detail->harga;
-                        });
-                    }),
-                
-
                 
                 Tables\Columns\TextColumn::make('tanggal_pembelian')
                     ->date()

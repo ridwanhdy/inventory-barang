@@ -5,7 +5,6 @@ namespace App\Filament\Widgets;
 use App\Models\Order;
 use App\Models\Produksi;
 use App\Models\BahanBaku;
-use App\Models\Customer;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -29,12 +28,6 @@ class StatsOverview extends BaseWidget
                 ->description('Jumlah produksi hari ini')
                 ->descriptionIcon('heroicon-o-cube')
                 ->color('info'),
-
-            Stat::make('Total Customer',
-                Customer::count() . ' orang')
-                ->description('Jumlah customer aktif')
-                ->descriptionIcon('heroicon-o-users')
-                ->color('primary'),
 
             // Stat::make('Bahan Baku Hampir Habis',
             //     BahanBaku::whereColumn('stok', '<=', 'stok_minimal')->count() . ' item')

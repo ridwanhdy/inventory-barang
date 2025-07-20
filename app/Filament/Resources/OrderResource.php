@@ -34,12 +34,9 @@ class OrderResource extends Resource
                 Forms\Components\Wizard::make([
                     Forms\Components\Wizard\Step::make('Informasi Order')
                         ->schema([
-                            Forms\Components\Select::make('customer_id')
-                                ->relationship('customer', 'nama')
-                                ->searchable()
-                                ->preload()
+                            Forms\Components\TextInput::make('nama_customer')
                                 ->required()
-                                ->label('Customer'),
+                                ->label('Nama Customer'),
                             
                             Forms\Components\Select::make('users_id')
                                 ->relationship('user', 'name')
@@ -218,7 +215,7 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('customer.nama')
+                Tables\Columns\TextColumn::make('nama_customer')
                     ->searchable()
                     ->sortable()
                     ->label('Customer'),

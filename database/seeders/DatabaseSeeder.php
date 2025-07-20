@@ -27,7 +27,6 @@ class DatabaseSeeder extends Seeder
             BahanBakuDetailSeeder::class,
             
             // Transactions
-            CustomerSeeder::class,
             OrderSeeder::class,
             PaymentSeeder::class,
             PembelianSeeder::class,
