@@ -27,7 +27,6 @@ class PrintInvoice extends ViewRecord
                     
                     $pdf = PDF::loadView('pdf.invoice', [
                         'order' => $order,
-                        'customer' => $order->customer,
                         'orderDetails' => $order->orderDetails,
                         'payments' => $order->payments,
                         'totalHarga' => $totalHarga,
@@ -37,7 +36,7 @@ class PrintInvoice extends ViewRecord
 
                     return Response::streamDownload(function () use ($pdf) {
                         echo $pdf->output();
-                    }, 'invoice-' . $order->id . '.pdf');
+                    }, 'invoice-' . ($order->no_transaksi ? str_replace('/', '-', $order->no_transaksi) : $order->id) . '.pdf');
                 }),
         ];
     }

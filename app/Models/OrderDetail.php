@@ -31,6 +31,11 @@ class OrderDetail extends Model
             if (!$orderDetail->order_id) {
                 throw new \Exception('Order ID is required for order detail');
             }
+            // Kurangi stok ProductDetail sesuai quantity
+            $productDetail = \App\Models\ProductDetail::where('product_id', $orderDetail->product_id)->first();
+            if ($productDetail) {
+                $productDetail->decrement('stok', $orderDetail->quantity);
+            }
         });
 
         static::saving(function ($orderDetail) {

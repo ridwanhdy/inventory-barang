@@ -2,33 +2,32 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Product;
 use App\Models\ProductDetail;
+use Illuminate\Database\Seeder;
 
 class ProductDetailSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Get all products
-        $products = Product::all();
-        
-        if ($products->count() > 0) {
-            foreach ($products as $product) {
-                // Create product detail with random stock
-                ProductDetail::create([
-                    'product_id' => $product->id,
-                    'stok' => rand(10, 100), // Random stock between 10-100
-                ]);
+        $stokMap = [
+            'Kaos Polos Premium Hitam' => 75.00,
+            'Kaos Polos Premium Putih' => 60.00,
+            'Kaos Sablon Custom Navy' => 45.00,
+            'Kaos Sablon Custom Merah' => 40.00,
+            'Jaket Hoodie Basic Navy' => 30.00,
+            'Jaket Bomber Premium Olive' => 25.00,
+            'Jaket Varsity Classic Merah-Putih' => 20.00,
+        ];
+
+        foreach ($stokMap as $namaProduct => $stok) {
+            $product = Product::where('nama_product', $namaProduct)->first();
+
+            if ($product) {
+                ProductDetail::where('product_id', $product->id)->update(['stok' => $stok]);
             }
-            
-            $this->command->info('ProductDetail data seeded successfully!');
-        } else {
-            $this->command->warn('No products found. Please seed products first.');
         }
+
+        $this->command->info('Stok produk kaos & jaket berhasil di-seed!');
     }
 }

@@ -9,16 +9,10 @@ class SatuanSeeder extends Seeder
 {
     public function run(): void
     {
-        $satuans = [
-            ['nama_satuan' => 'Pcs'],
-            ['nama_satuan' => 'Kg'],
-            ['nama_satuan' => 'Gram'],
-            ['nama_satuan' => 'Liter'],
-            ['nama_satuan' => 'Meter'],
-        ];
+        $satuans = ['Pcs', 'Kg', 'Gram', 'Meter'];
 
-        foreach ($satuans as $satuan) {
-            Satuan::create($satuan);
+        foreach ($satuans as $nama) {
+            Satuan::firstOrCreate(['nama_satuan' => $nama]);
         }
     }
-} 
+}

@@ -33,6 +33,12 @@ class Produksi extends Model
             ) {
                 // Tambahkan stok produk
                 $produksi->product->increment('stok', $produksi->jumlah_produksi);
+
+                // Tambahkan stok ke ProductDetail juga
+                $productDetail = \App\Models\ProductDetail::where('product_id', $produksi->product_id)->first();
+                if ($productDetail) {
+                    $productDetail->increment('stok', $produksi->jumlah_produksi);
+                }
             }
         });
     }

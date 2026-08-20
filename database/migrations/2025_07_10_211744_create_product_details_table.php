@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('product_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->integer('stok');
+            $table->float('stok', 8, 2)->default(0);
             $table->timestamps();
         });
     }

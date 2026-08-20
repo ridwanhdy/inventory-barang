@@ -41,7 +41,8 @@ class EditBahanBaku extends EditRecord
             TextInput::make('stok_minimal')
                 ->label('Stok Minimal')
                 ->required()
-                ->numeric(),
+                ->numeric()
+                ->step(0.01),
         ];
     }
 }

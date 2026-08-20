@@ -6,32 +6,25 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $this->call([
-            // Master Data
+            // Master data
             UserSeeder::class,
             SatuanSeeder::class,
             KategoriSeeder::class,
             PemasokSeeder::class,
-            
-            // Products & Bahan Baku
+
+            // Produk kaos & jaket + bahan baku
             ProductSeeder::class,
             BahanBakuSeeder::class,
-            
-            // Details (with observers)
+
+            // Stok (update dari observer yang auto-create detail)
             ProductDetailSeeder::class,
             BahanBakuDetailSeeder::class,
-            
-            // Transactions
-            OrderSeeder::class,
-            PaymentSeeder::class,
+
+            // Transaksi bahan baku & produksi
             PembelianSeeder::class,
-            
-            // Production
             ProduksiSeeder::class,
         ]);
     }

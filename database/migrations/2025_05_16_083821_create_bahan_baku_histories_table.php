@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('bahan_baku_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('bahan_baku_id')->constrained()->onDelete('cascade');
-            $table->integer('jumlah_perubahan');
+            $table->float('jumlah_perubahan', 8, 2);
             $table->string('tipe_perubahan'); // 'tambah' atau 'kurang'
             $table->text('keterangan')->nullable();
             $table->timestamps();

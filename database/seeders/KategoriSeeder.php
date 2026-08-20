@@ -10,22 +10,22 @@ class KategoriSeeder extends Seeder
     public function run(): void
     {
         $kategori = [
-            // Kategori untuk Bahan Jadi
-            ['nama_kategori' => 'Kaos Polos'],
-            ['nama_kategori' => 'Kaos Sablon'],
-            ['nama_kategori' => 'Jaket'],
-            ['nama_kategori' => 'Kemeja'],
-            ['nama_kategori' => 'Celana'],
-            // Kategori untuk Bahan Baku
-            ['nama_kategori' => 'Kain'],
-            ['nama_kategori' => 'Benang'],
-            ['nama_kategori' => 'Kancing'],
-            ['nama_kategori' => 'Resleting'],
-            ['nama_kategori' => 'Aksesoris'],
+            // Kategori produk jadi (kaos & jaket)
+            'Kaos Polos',
+            'Kaos Sablon',
+            'Jaket Hoodie',
+            'Jaket Bomber',
+            'Jaket Varsity',
+            // Kategori bahan baku
+            'Kain',
+            'Benang',
+            'Kancing',
+            'Resleting',
+            'Aksesoris',
         ];
 
-        foreach ($kategori as $item) {
-            Kategori::create($item);
+        foreach ($kategori as $nama) {
+            Kategori::firstOrCreate(['nama_kategori' => $nama]);
         }
     }
-} 
+}

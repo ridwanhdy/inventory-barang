@@ -26,8 +26,9 @@ class ViewBahanBaku extends ViewRecord
                     \Filament\Forms\Components\TextInput::make('amount')
                         ->label('Jumlah')
                         ->numeric()
+                        ->step(0.01)
                         ->required()
-                        ->minValue(1),
+                        ->minValue(0.01),
                     \Filament\Forms\Components\Textarea::make('keterangan')
                         ->label('Keterangan')
                         ->nullable(),

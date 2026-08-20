@@ -34,6 +34,12 @@ class OrderResource extends Resource
                 Forms\Components\Wizard::make([
                     Forms\Components\Wizard\Step::make('Informasi Order')
                         ->schema([
+                            Forms\Components\TextInput::make('no_transaksi')
+                                ->label('No. Transaksi')
+                                ->disabled()
+                                ->dehydrated()
+                                ->placeholder('Auto generate'),
+
                             Forms\Components\TextInput::make('nama_customer')
                                 ->required()
                                 ->label('Nama Customer'),
@@ -215,6 +221,11 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('no_transaksi')
+                    ->searchable()
+                    ->sortable()
+                    ->label('No. Transaksi'),
+
                 Tables\Columns\TextColumn::make('nama_customer')
                     ->searchable()
                     ->sortable()

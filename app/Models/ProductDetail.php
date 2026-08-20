@@ -12,6 +12,10 @@ class ProductDetail extends Model
         'stok',
     ];
 
+    protected $casts = [
+        'stok' => 'float',
+    ];
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

@@ -21,7 +21,7 @@ class PembelianResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->role === 'admin' || auth()->user()->role === 'kasir';
+        return auth()->user()->role === 'admin';
     }
 
     public static function form(Form $form): Form

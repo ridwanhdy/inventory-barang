@@ -46,7 +46,8 @@ class ProduksiResource extends Resource
                     'Selesai' => 'Selesai',
                 ])
                 ->default('Proses')
-                ->required(),
+                ->required()
+                ->disabled(fn($get) => \Carbon\Carbon::parse($get('produksi_selesai'))->isFuture()),
             ]);
     }
 
@@ -64,7 +65,8 @@ class ProduksiResource extends Resource
                         'Batal' => 'Batal',
                         'Selesai' => 'Selesai',
                     ])
-                    ->sortable(),
+                    ->sortable()
+                    ->disabled(fn($record) => \Carbon\Carbon::parse($record->produksi_selesai)->isFuture()),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('product')
@@ -88,6 +90,7 @@ class ProduksiResource extends Resource
                         'Batal' => 'Batal',
                         'Selesai' => 'Selesai',
                     ])
+                    ->disabled(fn($record) => \Carbon\Carbon::parse($record->produksi_selesai)->isFuture())
                     ->action(function ($record, $state) {
                         $record->update(['status' => $state]);
                     }),

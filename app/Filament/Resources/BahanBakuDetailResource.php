@@ -34,7 +34,7 @@ class BahanBakuDetailResource extends Resource
                 Select::make('kategori_id')
                     ->relationship('kategori', 'nama_kategori')
                     ->required(),
-                TextInput::make('stok')->numeric()->required(),
+                TextInput::make('stok')->numeric()->step(0.01)->required(),
             ]);
     }
 
@@ -96,5 +96,10 @@ class BahanBakuDetailResource extends Resource
             'edit' => Pages\EditBahanBakuDetail::route('/{record}/edit'),
             'view' => Pages\ViewBahanBakuDetail::route('/{record}'),
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->role === 'admin';
     }
 } 

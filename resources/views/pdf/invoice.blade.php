@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Invoice #{{ $order->id }}</title>
+    <title>Invoice {{ $order->no_transaksi ?? '#' . $order->id }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,16 +51,14 @@
     </div>
 
     <div class="invoice-info">
-        <p><strong>Invoice #:</strong> {{ $order->id }}</p>
+        <p><strong>No. Transaksi:</strong> {{ $order->no_transaksi ?? '#' . $order->id }}</p>
         <p><strong>Tanggal:</strong> {{ $order->tanggal_order->format('d/m/Y') }}</p>
         <p><strong>Status Pembayaran:</strong> {{ ucfirst($order->status_pembayaran) }}</p>
     </div>
 
     <div class="company-info">
         <h3>Informasi Customer</h3>
-        <p><strong>Nama:</strong> {{ $customer->nama }}</p>
-        <p><strong>Alamat:</strong> {!! strip_tags($customer->alamat) !!}</p>
-        <p><strong>No. Telp:</strong> {{ $customer->no_telp }}</p>
+        <p><strong>Nama:</strong> {{ $order->nama_customer }}</p>
     </div>
 
     <table>

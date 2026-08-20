@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('ukuran');
             $table->string('warna');
             $table->string('bahan');
-            $table->integer('stok')->default(0);
+            $table->float('stok', 8, 2)->default(0);
             $table->bigInteger('harga_jual');
             $table->string('foto');
             $table->timestamps();

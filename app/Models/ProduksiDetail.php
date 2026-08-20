@@ -32,5 +32,13 @@ class ProduksiDetail extends Model
                 $bahanBakuDetail->decrement('stok', $detail->jumlah_digunakan);
             }
         });
+
+        static::deleting(function ($detail) {
+            // Kembalikan stok ke BahanBakuDetail saat ProduksiDetail dihapus
+            $bahanBakuDetail = \App\Models\BahanBakuDetail::where('bahan_baku_id', $detail->bahan_baku_id)->first();
+            if ($bahanBakuDetail) {
+                $bahanBakuDetail->increment('stok', $detail->jumlah_digunakan);
+            }
+        });
     }
 }

@@ -12,6 +12,11 @@ class BahanBakuDetail extends Model
         'stok_minimal',
     ];
 
+    protected $casts = [
+        'stok' => 'float',
+        'stok_minimal' => 'float',
+    ];
+
     public function bahanBaku()
     {
         return $this->belongsTo(BahanBaku::class);

@@ -13,6 +13,10 @@ class BahanBakuHistory extends Model
         'keterangan',
     ];
 
+    protected $casts = [
+        'jumlah_perubahan' => 'float',
+    ];
+
     public function bahanBaku()
     {
         return $this->belongsTo(BahanBaku::class);

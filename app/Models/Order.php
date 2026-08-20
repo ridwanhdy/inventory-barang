@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
+        'no_transaksi',
         'nama_customer',
         'users_id',
         'tanggal_order',
@@ -46,10 +47,18 @@ class Order extends Model
     protected static function booted()
     {
         static::creating(function ($order) {
-            // Set default values if not provided
             $order->status_transaksi = $order->status_transaksi ?? 'proses';
             $order->status_pembayaran = $order->status_pembayaran ?? 'belum_bayar';
             $order->tanggal_order = $order->tanggal_order ?? now();
+
+            if (empty($order->no_transaksi)) {
+                $prefix = 'INV/' . now()->format('Y/m') . '/';
+                $last = static::where('no_transaksi', 'like', $prefix . '%')
+                    ->orderByDesc('no_transaksi')
+                    ->value('no_transaksi');
+                $next = $last ? ((int) substr($last, -4)) + 1 : 1;
+                $order->no_transaksi = $prefix . str_pad($next, 4, '0', STR_PAD_LEFT);
+            }
         });
 
         static::saving(function ($order) {

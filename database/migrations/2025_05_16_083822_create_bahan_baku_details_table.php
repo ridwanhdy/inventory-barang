@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('bahan_baku_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('bahan_baku_id')->constrained('bahan_bakus')->onDelete('cascade');
-            $table->integer('stok');
+            $table->float('stok', 8, 2)->default(0);
             $table->timestamps();
         });
     }
