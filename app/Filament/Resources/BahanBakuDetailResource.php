@@ -16,6 +16,10 @@ use Filament\Tables\Table;
 class BahanBakuDetailResource extends Resource
 {
     protected static ?string $model = BahanBakuDetail::class;
+
+    protected static ?string $modelLabel = 'Stok Bahan Baku';
+    protected static ?string $pluralModelLabel = 'Stok Bahan Baku';
+
     protected static ?string $navigationLabel = 'Stok Bahan Baku';
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationGroup = 'Stok';
@@ -102,4 +106,4 @@ class BahanBakuDetailResource extends Resource
     {
         return auth()->user()->role === 'admin';
     }
-} 
+}

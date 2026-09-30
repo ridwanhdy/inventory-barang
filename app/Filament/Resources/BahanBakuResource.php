@@ -20,6 +20,9 @@ class BahanBakuResource extends Resource
 {
     protected static ?string $model = BahanBaku::class;
 
+    protected static ?string $modelLabel = 'Bahan Baku';
+    protected static ?string $pluralModelLabel = 'Bahan Baku';
+
     protected static ?string $navigationGroup = 'Master Data';
     protected static ?int $navigationSort = 0;
     protected static ?string $navigationLabel = 'Bahan Baku';

@@ -14,6 +14,9 @@ class PaymentResource extends Resource
 {
     protected static ?string $model = Payment::class;
 
+    protected static ?string $modelLabel = 'Pembayaran';
+    protected static ?string $pluralModelLabel = 'Pembayaran';
+
     protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
 
@@ -91,4 +94,4 @@ class PaymentResource extends Resource
             'edit' => Pages\EditPayment::route('/{record}/edit'),
         ];
     }
-} 
+}

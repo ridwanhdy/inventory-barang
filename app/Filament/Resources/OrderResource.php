@@ -17,6 +17,9 @@ class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
+    protected static ?string $modelLabel = 'Penjualan';
+    protected static ?string $pluralModelLabel = 'Penjualan';
+
     protected static ?string $navigationLabel = 'Penjualan';
     protected static ?string $navigationGroup = 'Transaksi';
     protected static ?int $navigationSort = 4;

@@ -15,9 +15,12 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationLabel = 'Users';
+    protected static ?string $modelLabel = 'Pengguna';
+    protected static ?string $pluralModelLabel = 'Pengguna';
 
-    protected static ?string $navigationGroup = 'Manajemen User';
+    protected static ?string $navigationLabel = 'Pengguna';
+
+    protected static ?string $navigationGroup = 'Manajemen Pengguna';
 
     protected static ?int $navigationSort = 6;
 
@@ -109,4 +112,4 @@ class UserResource extends Resource
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
-} 
+}

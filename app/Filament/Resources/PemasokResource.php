@@ -14,6 +14,9 @@ class PemasokResource extends Resource
 {
     protected static ?string $model = Pemasok::class;
 
+    protected static ?string $modelLabel = 'Pemasok';
+    protected static ?string $pluralModelLabel = 'Pemasok';
+
     protected static ?string $navigationIcon = 'heroicon-o-truck';
     protected static ?string $navigationGroup = 'Master Data';
     protected static ?string $navigationLabel = 'Pemasok';

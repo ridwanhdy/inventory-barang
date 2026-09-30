@@ -19,6 +19,9 @@ class SatuanResource extends Resource
 {
     protected static ?string $model = Satuan::class;
 
+    protected static ?string $modelLabel = 'Satuan';
+    protected static ?string $pluralModelLabel = 'Satuan';
+
     protected static ?string $navigationLabel = 'Satuan';
 
     protected static ?string $navigationGroup = 'Master Data';

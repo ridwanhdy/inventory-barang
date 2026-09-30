@@ -100,6 +100,8 @@ class PaymentsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modelLabel('Pembayaran')
+            ->pluralModelLabel('Pembayaran')
             ->recordTitleAttribute('id')
             ->columns([
                 Tables\Columns\TextColumn::make('jumlah_bayar')
@@ -230,4 +232,4 @@ class PaymentsRelationManager extends RelationManager
                 ]),
             ]);
     }
-} 
+}

@@ -17,6 +17,9 @@ class ProductDetailResource extends Resource
 {
     protected static ?string $model = ProductDetail::class;
 
+    protected static ?string $modelLabel = 'Stok Produk';
+    protected static ?string $pluralModelLabel = 'Stok Produk';
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $navigationLabel = 'Stok Produk';

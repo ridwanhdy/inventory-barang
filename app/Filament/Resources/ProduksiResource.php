@@ -19,6 +19,9 @@ class ProduksiResource extends Resource
 {
     protected static ?string $model = Produksi::class;
 
+    protected static ?string $modelLabel = 'Produksi';
+    protected static ?string $pluralModelLabel = 'Produksi';
+
     protected static ?string $navigationGroup = 'Manajemen Produksi';
     protected static ?int $navigationSort = 5;
     protected static ?string $navigationLabel = 'Produksi';

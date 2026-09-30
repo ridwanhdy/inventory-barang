@@ -22,6 +22,7 @@ class LaporanPenjualanResource extends Resource
     protected static ?string $navigationLabel = 'Laporan Penjualan';
 
     protected static ?string $modelLabel = 'Laporan Penjualan';
+    protected static ?string $pluralModelLabel = 'Laporan Penjualan';
 
     protected static ?string $navigationGroup = 'Laporan';
     protected static ?int $navigationSort = 6;
@@ -166,4 +167,4 @@ class LaporanPenjualanResource extends Resource
     {
         return true;
     }
-} 
+}

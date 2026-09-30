@@ -20,6 +20,7 @@ class LaporanStokBahanBakuResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
     protected static ?string $navigationLabel = 'Laporan Stok Bahan Baku';
     protected static ?string $modelLabel = 'Laporan Stok Bahan Baku';
+    protected static ?string $pluralModelLabel = 'Laporan Stok Bahan Baku';
     protected static ?string $navigationGroup = 'Laporan';
     protected static ?int $navigationSort = 7;
 
@@ -88,4 +89,4 @@ class LaporanStokBahanBakuResource extends Resource
     {
         return false;
     }
-} 
+}

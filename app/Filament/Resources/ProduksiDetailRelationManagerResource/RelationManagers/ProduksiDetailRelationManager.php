@@ -53,6 +53,8 @@ class ProduksiDetailRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modelLabel('Bahan Baku')
+            ->pluralModelLabel('Bahan Baku')
             ->recordTitleAttribute('jumlah_digunakan')
             ->columns([
                 TextColumn::make('bahanBaku.nama_bahan')->label('Bahan Baku'), // Menampilkan nama bahan baku

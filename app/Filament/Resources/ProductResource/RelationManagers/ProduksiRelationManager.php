@@ -40,6 +40,8 @@ class ProduksiRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modelLabel('Produksi')
+            ->pluralModelLabel('Produksi')
             ->recordTitleAttribute('jumlah_produksi')
             ->columns([
                 Tables\Columns\TextColumn::make('jumlah_produksi')
@@ -73,4 +75,4 @@ class ProduksiRelationManager extends RelationManager
                 ]),
             ]);
     }
-} 
+}
