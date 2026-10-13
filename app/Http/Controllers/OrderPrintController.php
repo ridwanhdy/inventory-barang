@@ -9,12 +9,13 @@ class OrderPrintController extends Controller
 {
     public function printStruk($orderId)
     {
+        abort_unless(auth()->check() && in_array(auth()->user()->role, ['admin', 'kasir'], true), 403);
         $order = Order::with(['orderDetails.product', 'payments'])->findOrFail($orderId);
 
         $totalHarga = $order->orderDetails->sum(function ($detail) {
             return $detail->quantity * $detail->harga;
         });
-        $totalBayar = $order->payments->sum('jumlah_bayar');
+        $totalBayar = $order->paidAmount();
 
         $pdf = Pdf::loadView('pdf.invoice', [
             'order' => $order,
@@ -22,7 +23,8 @@ class OrderPrintController extends Controller
             'payments' => $order->payments,
             'totalHarga' => $totalHarga,
             'totalBayar' => $totalBayar,
-            'sisaBayar' => max(0, $totalHarga - $totalBayar),
+            'sisaBayar' => $order->remainingAmount(),
+            'totalKembalian' => $order->payments->sum('kembalian'),
         ]);
 
         $filename = 'invoice-' . ($order->no_transaksi

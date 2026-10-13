@@ -3,79 +3,59 @@
 namespace App\Filament\Resources\PembelianResource\Pages;
 
 use App\Filament\Resources\PembelianResource;
+use App\Support\StockPresentation;
 use Filament\Actions;
-use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Resources\Pages\ViewRecord;
 
 class ViewPembelian extends ViewRecord
 {
     protected static string $resource = PembelianResource::class;
 
+    public function boot(): void
+    {
+        app()->setLocale('id');
+    }
+
+    public function getTitle(): string
+    {
+        return 'Detail Penerimaan Bahan Baku';
+    }
+
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\EditAction::make(),
-        ];
+        return [Actions\EditAction::make()->label('Koreksi penerimaan')];
     }
 
     public function infolist(Infolist $infolist): Infolist
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Informasi Pembelian')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('pemasok.nama_pemasok')
-                            ->label('Pemasok'),
-                        Infolists\Components\TextEntry::make('tanggal_pembelian')
-                            ->label('Tanggal Pembelian')
-                            ->date(),
-                        Infolists\Components\TextEntry::make('catatan')
-                            ->label('Catatan')
-                            ->markdown()
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
-                
-                Infolists\Components\Section::make('Detail Pembelian')
-                    ->schema([
-                        Infolists\Components\RepeatableEntry::make('pembelianDetails')
-                            ->schema([
-                                Infolists\Components\TextEntry::make('bahanBaku.nama_bahan')
-                                    ->label('Bahan Baku'),
-                                Infolists\Components\TextEntry::make('quantity')
-                                    ->label('Quantity'),
-                                Infolists\Components\TextEntry::make('bahanBaku.satuan.nama_satuan')
-                                    ->label('Satuan'),
-                                Infolists\Components\TextEntry::make('harga')
-                                    ->label('Harga Satuan')
-                                    ->money('IDR'),
-                                Infolists\Components\TextEntry::make('subtotal')
-                                    ->label('Subtotal')
-                                    ->money('IDR'),
-                            ])
-                            ->columns(5),
-                    ]),
-                
-                Infolists\Components\Section::make('Total')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('total_harga')
-                            ->label('Total Harga')
-                            ->money('IDR')
-                            ->size(Infolists\Components\TextEntry\TextEntrySize::Large),
-                    ])
-                    ->columns(1),
-                
-                Infolists\Components\Section::make('Informasi Sistem')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('created_at')
-                            ->label('Dibuat Pada')
-                            ->dateTime(),
-                        Infolists\Components\TextEntry::make('updated_at')
-                            ->label('Terakhir Diupdate')
-                            ->dateTime(),
-                    ])
-                    ->columns(2),
-            ]);
+        return $infolist->schema([
+            Infolists\Components\Section::make('Informasi penerimaan')
+                ->schema([
+                    Infolists\Components\TextEntry::make('pemasok.nama_pemasok')->label('Pemasok'),
+                    Infolists\Components\TextEntry::make('tanggal_pembelian')->label('Tanggal diterima')->date('d M Y'),
+                    Infolists\Components\TextEntry::make('catatan')->label('Catatan')->placeholder('—')->columnSpanFull(),
+                ])
+                ->columns(2),
+            Infolists\Components\Section::make('Bahan baku yang diterima')
+                ->schema([
+                    Infolists\Components\RepeatableEntry::make('pembelianDetails')
+                        ->hiddenLabel()
+                        ->schema([
+                            Infolists\Components\TextEntry::make('bahanBaku.nama_bahan')->label('Bahan baku'),
+                            Infolists\Components\TextEntry::make('quantity')
+                                ->label('Jumlah diterima')
+                                ->formatStateUsing(fn ($state, $record): string => StockPresentation::quantity($state, $record->bahanBaku?->satuan?->nama_satuan)),
+                        ])
+                        ->columns(2),
+                ]),
+            Infolists\Components\Section::make('Riwayat pencatatan')
+                ->schema([
+                    Infolists\Components\TextEntry::make('created_at')->label('Dicatat pada')->dateTime('d M Y H:i'),
+                    Infolists\Components\TextEntry::make('updated_at')->label('Terakhir dikoreksi')->dateTime('d M Y H:i'),
+                ])
+                ->columns(2),
+        ]);
     }
-} 
+}

@@ -27,7 +27,7 @@ class LatestOrders extends TableWidget
     {
         return $table
             ->heading('Penjualan terbaru')
-            ->description('Lima transaksi terakhir berdasarkan tanggal order.')
+            ->description('Lima penjualan terakhir berdasarkan tanggal penjualan.')
             ->query(
                 Order::query()
                     ->withSum('orderDetails as calculated_total', 'subtotal')
@@ -60,8 +60,8 @@ class LatestOrders extends TableWidget
                     ->label('Pembayaran')
                     ->badge()
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
-                        'belum_bayar' => 'Belum bayar',
-                        'cicilan' => 'Cicilan',
+                        'belum_bayar' => 'Belum dibayar',
+                        'cicilan' => 'Dibayar sebagian',
                         'lunas' => 'Lunas',
                         default => 'Status tidak diketahui',
                     })
@@ -72,7 +72,7 @@ class LatestOrders extends TableWidget
                         default => 'gray',
                     }),
                 TextColumn::make('tanggal_order')
-                    ->label('Tanggal order')
+                    ->label('Tanggal penjualan')
                     ->visibleFrom('md')
                     ->date('d M Y')
                     ->placeholder('Belum tersedia'),

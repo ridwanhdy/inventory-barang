@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PemasokResource\Pages;
 use App\Models\Pemasok;
+use App\Support\MasterDataUsage;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -41,6 +43,16 @@ class PemasokResource extends Resource
                     ->rows(3)
                     ->maxLength(1000),
             ]);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()?->role === 'admin' && ! MasterDataUsage::isUsed($record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
     }
 
     public static function table(Table $table): Table

@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SatuanResource\Pages;
 use App\Filament\Resources\SatuanResource\RelationManagers;
 use App\Models\Satuan;
+use App\Support\MasterDataUsage;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -43,6 +45,16 @@ class SatuanResource extends Resource
                 ->label('Nama Satuan')
                 ->required(),
             ]);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()?->role === 'admin' && ! MasterDataUsage::isUsed($record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
     }
 
     public static function table(Table $table): Table

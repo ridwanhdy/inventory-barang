@@ -3,156 +3,176 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PembelianResource\Pages;
+use App\Models\BahanBaku;
 use App\Models\Pembelian;
+use App\Support\StockPresentation;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class PembelianResource extends Resource
 {
     protected static ?string $model = Pembelian::class;
 
-    protected static ?string $modelLabel = 'Pembelian';
-    protected static ?string $pluralModelLabel = 'Pembelian';
-
-    protected static ?string $navigationLabel = 'Pembelian';
+    protected static ?string $modelLabel = 'Penerimaan Bahan Baku';
+    protected static ?string $pluralModelLabel = 'Penerimaan Bahan Baku';
+    protected static ?string $navigationLabel = 'Penerimaan Bahan Baku';
     protected static ?string $navigationGroup = 'Transaksi';
     protected static ?int $navigationSort = 5;
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->role === 'admin';
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return static::canViewAny();
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::canViewAny();
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return static::canViewAny();
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->role === 'admin';
+        return static::canViewAny();
     }
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Wizard::make([
-                    Forms\Components\Wizard\Step::make('Informasi Pembelian')
+        return $form->schema([
+            Forms\Components\Section::make('Informasi penerimaan')
+                ->description('Catat bahan baku yang sudah diterima dari pemasok. Jumlah yang disimpan akan menambah stok bahan baku.')
+                ->schema([
+                    Forms\Components\Select::make('pemasok_id')
+                        ->relationship('pemasok', 'nama_pemasok')
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->label('Pemasok'),
+                    Forms\Components\DatePicker::make('tanggal_pembelian')
+                        ->required()
+                        ->label('Tanggal diterima')
+                        ->default(today())
+                        ->maxDate(today()),
+                    Forms\Components\Textarea::make('catatan')
+                        ->label('Catatan')
+                        ->rows(2)
+                        ->placeholder('Nomor nota pemasok atau keterangan penerimaan')
+                        ->columnSpanFull(),
+                ])
+                ->columns(2),
+            Forms\Components\Section::make('Bahan baku yang diterima')
+                ->schema([
+                    Forms\Components\Repeater::make('pembelianDetails')
+                        ->relationship()
                         ->schema([
-                            Forms\Components\Select::make('pemasok_id')
-                                ->relationship('pemasok', 'nama_pemasok')
+                            Forms\Components\Select::make('bahan_baku_id')
+                                ->relationship('bahanBaku', 'nama_bahan', fn (Builder $query) => $query->where('jenis', 'bahan baku')->with('satuan'))
+                                ->getOptionLabelFromRecordUsing(fn (BahanBaku $record): string => $record->nama_bahan . ' (' . ($record->satuan?->nama_satuan ?? 'satuan belum diatur') . ')')
                                 ->searchable()
                                 ->preload()
+                                ->live()
                                 ->required()
-                                ->label('Pemasok'),
-                            Forms\Components\DatePicker::make('tanggal_pembelian')
+                                ->label('Bahan baku')
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                ->afterStateUpdated(function ($state, Forms\Set $set): void {
+                                    $set('satuan', BahanBaku::find($state)?->satuan?->nama_satuan);
+                                }),
+                            Forms\Components\TextInput::make('quantity')
+                                ->numeric()
                                 ->required()
-                                ->label('Tanggal Pembelian')
-                                ->default(now()),
-                            Forms\Components\Textarea::make('catatan')
-                                ->label('Catatan')
-                                ->rows(3)
-                                ->placeholder('Catatan tambahan untuk pembelian ini...'),
+                                ->minValue(0.01)
+                                ->maxValue(999999.99)
+                                ->step(0.01)
+                                ->rules(['decimal:0,2'])
+                                ->label('Jumlah diterima'),
+                            Forms\Components\TextInput::make('satuan')
+                                ->label('Satuan')
+                                ->disabled()
+                                ->dehydrated(false)
+                                ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set): void {
+                                    $set('satuan', BahanBaku::find($get('bahan_baku_id'))?->satuan?->nama_satuan);
+                                }),
                         ])
-                        ->columns(2)
-                        ->columnSpan('full'),
-                    Forms\Components\Wizard\Step::make('Tambah Bahan Baku')
-                        ->schema([
-                            Forms\Components\Repeater::make('pembelianDetails')
-                                ->relationship()
-                                ->schema([
-                                    Forms\Components\Select::make('bahan_baku_id')
-                                        ->relationship('bahanBaku', 'nama_bahan')
-                                        ->searchable()
-                                        ->preload()
-                                        ->required()
-                                        ->label('Bahan Baku')
-                                        ->live()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                            if ($state) {
-                                                $bahanBaku = \App\Models\BahanBaku::find($state);
-                                                if ($bahanBaku) {
-                                                    $set('satuan', $bahanBaku->satuan->nama_satuan);
-                                                } else {
-                                                    $set('satuan', '');
-                                                }
-                                            } else {
-                                                $set('satuan', '');
-                                            }
-                                        }),
-                                    Forms\Components\TextInput::make('quantity')
-                                        ->numeric()
-                                        ->required()
-                                        ->minValue(1)
-                                        ->label('Quantity')
-                                        ->live(),
-                                    Forms\Components\TextInput::make('satuan')
-                                        ->label('Satuan')
-                                        ->disabled()
-                                        ->dehydrated(false)
-                                        ->live()
-                                        ->visible(fn (callable $get) => $get('bahan_baku_id') !== null),
-                                ])
-                                ->columns(3)
-                                ->defaultItems(1)
-                                ->addActionLabel('Tambah Bahan Baku')
-                                ->label('Detail Pembelian')
-                                ->required()
-                                ->minItems(1)
-                                ->live(),
-                        ])
-                        ->columnSpan('full'),
-                ])
-                ->columnSpan('full')
-                ->skippable(),
-            ]);
+                        ->columns(3)
+                        ->defaultItems(1)
+                        ->addActionLabel('Tambah bahan baku')
+                        ->label('Rincian penerimaan')
+                        ->required()
+                        ->minItems(1)
+                        ->reorderable(false),
+                ]),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->description('Riwayat bahan baku yang diterima dari pemasok. Koreksi jumlah penerimaan akan menyesuaikan stok bahan baku.')
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['pemasok', 'pembelianDetails.bahanBaku.satuan']))
+            ->defaultSort('tanggal_pembelian', 'desc')
             ->columns([
+                Tables\Columns\TextColumn::make('tanggal_pembelian')
+                    ->date('d M Y')
+                    ->sortable()
+                    ->label('Tanggal diterima'),
                 Tables\Columns\TextColumn::make('pemasok.nama_pemasok')
                     ->searchable()
                     ->sortable()
                     ->label('Pemasok'),
-                
-                Tables\Columns\TextColumn::make('pembelianDetails.bahanBaku.nama_bahan')
+                Tables\Columns\TextColumn::make('bahan_diterima')
+                    ->label('Bahan baku dan jumlah diterima')
+                    ->getStateUsing(fn (Pembelian $record): array => $record->pembelianDetails->map(
+                        fn ($detail): string => ($detail->bahanBaku?->nama_bahan ?? 'Bahan baku tidak tersedia') . ' — ' . StockPresentation::quantity($detail->quantity, $detail->bahanBaku?->satuan?->nama_satuan),
+                    )->all())
                     ->listWithLineBreaks()
-                    ->label('Bahan Baku'),
-                
-                Tables\Columns\TextColumn::make('total_quantity')
-                    ->label('Total Quantity')
-                    ->getStateUsing(function (Pembelian $record) {
-                        return $record->pembelianDetails->sum('quantity');
-                    }),
-                
-                Tables\Columns\TextColumn::make('tanggal_pembelian')
-                    ->date()
-                    ->sortable()
-                    ->label('Tanggal Pembelian'),
-                
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas('pembelianDetails.bahanBaku', fn (Builder $query) => $query->where('nama_bahan', 'like', '%' . $search . '%'))),
+                Tables\Columns\TextColumn::make('catatan')
+                    ->label('Catatan')
+                    ->limit(60)
+                    ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('pemasok')
+                    ->relationship('pemasok', 'nama_pemasok')
+                    ->label('Pemasok')
+                    ->searchable()
+                    ->preload(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
-                    ->label('Hapus'),
+                Tables\Actions\ViewAction::make()->label('Lihat penerimaan'),
+                Tables\Actions\EditAction::make()->label('Koreksi penerimaan'),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

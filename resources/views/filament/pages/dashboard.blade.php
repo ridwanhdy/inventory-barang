@@ -18,12 +18,12 @@
                 @if (\App\Filament\Resources\OrderResource::canCreate())
                     <a href="{{ \App\Filament\Resources\OrderResource::getUrl('create') }}" class="inv-hero-action inv-hero-action-primary">
                         <x-filament::icon icon="heroicon-o-plus" class="inv-icon" />
-                        Buat order
+                        Buat penjualan
                     </a>
                 @elseif (\App\Filament\Resources\OrderResource::canViewAny())
                     <a href="{{ \App\Filament\Resources\OrderResource::getUrl() }}" class="inv-hero-action inv-hero-action-primary">
                         <x-filament::icon icon="heroicon-o-shopping-bag" class="inv-icon" />
-                        Lihat order
+                        Lihat penjualan
                     </a>
                 @endif
 

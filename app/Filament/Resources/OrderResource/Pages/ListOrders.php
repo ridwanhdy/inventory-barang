@@ -9,23 +9,17 @@ use Filament\Resources\Pages\ListRecords;
 class ListOrders extends ListRecords
 {
     protected static string $resource = OrderResource::class;
+    public function boot(): void { app()->setLocale('id'); }
+
+    public function getSubheading(): ?string
+    {
+        return 'Penjualan kaos dan jaket kepada pelanggan. Pantau barang keluar, pembayaran, dan sisa tagihan.';
+    }
+
+    public function getBreadcrumb(): ?string { return 'Daftar penjualan'; }
 
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\CreateAction::make()
-                ->label('Tambah Order'),
-        ];
-    }
-
-    protected function getTableActions(): array
-    {
-        return [
-            Actions\Action::make('print')
-                ->label('Print Invoice')
-                ->icon('heroicon-o-printer')
-                ->url(fn ($record) => route('filament.admin.resources.orders.print', ['record' => $record]))
-                ->openUrlInNewTab(),
-        ];
+        return [Actions\CreateAction::make()->label('Buat penjualan')];
     }
 }

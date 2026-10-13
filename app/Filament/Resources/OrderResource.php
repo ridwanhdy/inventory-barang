@@ -5,306 +5,188 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\PaymentsRelationManager;
 use App\Models\Order;
+use App\Models\Product;
+use App\Support\StockPresentation;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
-
-    protected static ?string $modelLabel = 'Penjualan';
-    protected static ?string $pluralModelLabel = 'Penjualan';
-
-    protected static ?string $navigationLabel = 'Penjualan';
+    protected static ?string $modelLabel = 'Penjualan Produk';
+    protected static ?string $pluralModelLabel = 'Penjualan Produk';
+    protected static ?string $navigationLabel = 'Penjualan Produk';
     protected static ?string $navigationGroup = 'Transaksi';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
-    public static function shouldRegisterNavigation(): bool
+    public static function canViewAny(): bool
     {
-        return auth()->user()->role === 'admin' || auth()->user()->role === 'kasir';
+        return in_array(auth()->user()?->role, ['admin', 'kasir'], true);
+    }
+
+    public static function shouldRegisterNavigation(): bool { return static::canViewAny(); }
+    public static function canCreate(): bool { return static::canViewAny(); }
+    public static function canView(Model $record): bool { return static::canViewAny(); }
+    public static function canEdit(Model $record): bool { return static::canViewAny(); }
+    public static function canDelete(Model $record): bool { return false; }
+    public static function canDeleteAny(): bool { return false; }
+
+    public static function rupiah(float|int|string|null $amount): string
+    {
+        return 'Rp' . number_format((float) $amount, 0, ',', '.');
+    }
+
+    protected static function updateLineTotal(Forms\Get $get, Forms\Set $set): void
+    {
+        $set('subtotal', (int) $get('quantity') * (int) $get('harga'));
+        $items = $get('../../orderDetails') ?? [];
+        $set('../../total_harga', collect($items)->sum(fn ($item) => (int) ($item['quantity'] ?? 0) * (int) ($item['harga'] ?? 0)));
     }
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Wizard::make([
-                    Forms\Components\Wizard\Step::make('Informasi Order')
+        $locked = fn (?Order $record): bool => ($sale = $record?->fresh()) !== null && ! $sale->canEditItems();
+
+        return $form->schema([
+            Forms\Components\Hidden::make('status_transaksi')
+                ->default('proses')
+                ->dehydrated(fn (string $operation): bool => $operation === 'create'),
+            Forms\Components\Section::make('Pelanggan dan tanggal')
+                ->schema([
+                    Forms\Components\TextInput::make('nama_customer')
+                        ->label('Nama pelanggan')
+                        ->placeholder('Nama pelanggan atau toko')
+                        ->required()->maxLength(255)->disabled($locked),
+                    Forms\Components\DatePicker::make('tanggal_order')
+                        ->label('Tanggal penjualan')
+                        ->default(now('Asia/Jakarta'))->required()->disabled($locked),
+                    Forms\Components\Select::make('users_id')
+                        ->label('Petugas kasir')
+                        ->relationship('user', 'name')
+                        ->default(auth()->id())->disabled()->dehydrated()->required(),
+                    Forms\Components\TextInput::make('no_transaksi')
+                        ->label('Nomor penjualan')
+                        ->placeholder('Dibuat otomatis setelah disimpan')
+                        ->disabled()->dehydrated(false),
+                ])->columns(2),
+            Forms\Components\Section::make('Produk yang dijual')
+                ->description(fn (?Order $record): string => ($sale = $record?->fresh()) !== null && ! $sale->canEditItems()
+                    ? 'Daftar produk dikunci setelah pembayaran dicatat atau barang diserahkan.'
+                    : 'Pilih varian dan jumlah. Stok produk berkurang ketika penjualan disimpan.')
+                ->schema([
+                    Forms\Components\Repeater::make('orderDetails')
+                        ->label('Daftar produk')
+                        ->disabled($locked)
+                        ->relationship()
                         ->schema([
-                            Forms\Components\TextInput::make('no_transaksi')
-                                ->label('No. Transaksi')
-                                ->disabled()
-                                ->dehydrated()
-                                ->placeholder('Auto generate'),
-
-                            Forms\Components\TextInput::make('nama_customer')
-                                ->required()
-                                ->label('Nama Customer'),
-                            
-                            Forms\Components\Select::make('users_id')
-                                ->relationship('user', 'name')
-                                ->searchable()
-                                ->preload()
-                                ->required()
-                                ->label('User')
-                                ->default(auth()->id())
-                                ->disabled()
-                                ->dehydrated(),
-                            
-                            Forms\Components\DatePicker::make('tanggal_order')
-                                ->required()
-                                ->label('Tanggal Order')
-                                ->default(now()),
-
-                            Forms\Components\Radio::make('status_transaksi')
-                                ->options([
-                                    'proses' => 'Proses',
-                                    'batal' => 'Batal',
-                                    'selesai' => 'Selesai',
-                                ])
-                                ->required()
-                                ->label('Status Transaksi')
-                                ->inline()
-                                ->default('proses')
-                                ->descriptions([
-                                    'proses' => 'Order sedang diproses',
-                                    'batal' => 'Order dibatalkan',
-                                    'selesai' => 'Order selesai',
-                                ]),
-
-                            Forms\Components\Radio::make('status_pembayaran')
-                                ->options([
-                                    'belum_bayar' => 'Belum Bayar',
-                                    'cicilan' => 'Cicilan',
-                                    'lunas' => 'Lunas',
-                                ])
-                                ->required()
-                                ->label('Status Pembayaran')
-                                ->inline()
-                                ->default('belum_bayar')
-                                ->descriptions([
-                                    'belum_bayar' => 'Belum ada pembayaran',
-                                    'cicilan' => 'Pembayaran secara cicilan',
-                                    'lunas' => 'Pembayaran sudah lunas',
-                                ]),
-                        ])
-                        ->columns(3)
-                        ->columnSpan('full'),
-
-                    Forms\Components\Wizard\Step::make('Tambah Product')
-                        ->schema([
-                            Forms\Components\Repeater::make('orderDetails')
-                                ->relationship()
-                                ->schema([
-                                    Forms\Components\Select::make('product_id')
-                                        ->relationship('product', 'nama_product')
-                                        ->searchable()
-                                        ->preload()
-                                        ->required()
-                                        ->label('Product')
-                                        ->live()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                            if ($state) {
-                                                $product = \App\Models\Product::find($state);
-                                                if ($product) {
-                                                    $set('harga', $product->harga_jual);
-                                                    // Update subtotal when product changes
-                                                    $quantity = $get('quantity');
-                                                    if ($quantity) {
-                                                        $set('subtotal', $quantity * $product->harga_jual);
-                                                        // Update total immediately
-                                                        $orderDetails = $get('../../orderDetails');
-                                                        if ($orderDetails) {
-                                                            $total = collect($orderDetails)->sum('subtotal');
-                                                            $set('../../total_harga', $total);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }),
-                                    
-                                    Forms\Components\TextInput::make('quantity')
-                                        ->numeric()
-                                        ->required()
-                                        ->minValue(1)
-                                        ->label('Quantity')
-                                        ->live()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                            $harga = $get('harga');
-                                            if ($state && $harga) {
-                                                $set('subtotal', $state * $harga);
-                                                // Update total immediately
-                                                $orderDetails = $get('../../orderDetails');
-                                                if ($orderDetails) {
-                                                    $total = collect($orderDetails)->sum('subtotal');
-                                                    $set('../../total_harga', $total);
-                                                }
-                                            }
-                                        }),
-                                    
-                                    Forms\Components\TextInput::make('harga')
-                                        ->numeric()
-                                        ->disabled()
-                                        ->dehydrated()
-                                        ->label('Harga Product')
-                                        ->live()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                            $quantity = $get('quantity');
-                                            if ($state && $quantity) {
-                                                $set('subtotal', $state * $quantity);
-                                                // Update total immediately
-                                                $orderDetails = $get('../../orderDetails');
-                                                if ($orderDetails) {
-                                                    $total = collect($orderDetails)->sum('subtotal');
-                                                    $set('../../total_harga', $total);
-                                                }
-                                            }
-                                        }),
-                                    
-                                    Forms\Components\TextInput::make('subtotal')
-                                        ->numeric()
-                                        ->disabled()
-                                        ->dehydrated()
-                                        ->label('Subtotal')
-                                        ->prefix('Rp')
-                                        ->live()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                            // Update total when subtotal changes
-                                            $orderDetails = $get('../../orderDetails');
-                                            if ($orderDetails) {
-                                                $total = collect($orderDetails)->sum('subtotal');
-                                                $set('../../total_harga', $total);
-                                            }
-                                        }),
-                                ])
-                                ->columns(4)
-                                ->defaultItems(1)
-                                ->addActionLabel('Tambah Product')
-                                ->label('Detail Order')
-                                ->required()
-                                ->minItems(1)
-                                ->live()
-                                ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                    if ($state) {
-                                        $total = collect($state)->sum('subtotal');
-                                        $set('total_harga', $total);
-                                    }
+                            Forms\Components\Select::make('product_id')
+                                ->label('Produk, warna, dan ukuran')
+                                ->relationship('product', 'nama_product', modifyQueryUsing: fn (Builder $query) => $query->with('satuan')->withSum('details', 'stok'))
+                                ->getOptionLabelFromRecordUsing(fn (Product $record): string => $record->nama_product . ' · ' . $record->warna . ' · ' . $record->ukuran . ' · Stok ' . StockPresentation::quantity($record->details_sum_stok, $record->satuan?->nama_satuan))
+                                ->searchable(['nama_product', 'warna', 'ukuran'])->preload()
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                ->required()->live()->columnSpanFull()
+                                ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get): void {
+                                    $set('harga', Product::find($state)?->harga_jual ?? 0);
+                                    static::updateLineTotal($get, $set);
                                 }),
-                            
-                            Forms\Components\TextInput::make('total_harga')
-                                ->numeric()
-                                ->disabled()
-                                ->dehydrated()
-                                ->label('Total Harga')
-                                ->prefix('Rp')
-                                ->live()
-                                ->afterStateHydrated(function (Forms\Set $set, Forms\Get $get) {
-                                    // Calculate initial total when form is loaded
-                                    $orderDetails = $get('orderDetails');
-                                    if ($orderDetails) {
-                                        $total = collect($orderDetails)->sum('subtotal');
-                                        $set('total_harga', $total);
-                                    }
-                                }),
-                        ])
-                        ->columnSpan('full'),
-                ])
-                ->columnSpan('full')
-                ->skippable(),
-            ]);
+                            Forms\Components\TextInput::make('quantity')
+                                ->label('Jumlah dijual')->integer()->minValue(1)->default(1)->required()
+                                ->live(debounce: 400)
+                                ->afterStateUpdated(fn ($state, Forms\Set $set, Forms\Get $get) => static::updateLineTotal($get, $set)),
+                            Forms\Components\TextInput::make('harga')
+                                ->label('Harga per produk')->prefix('Rp')->numeric()->disabled()->dehydrated()->required(),
+                            Forms\Components\TextInput::make('subtotal')
+                                ->label('Subtotal')->prefix('Rp')->numeric()->disabled()->dehydrated(false),
+                        ])->columns(3)->defaultItems(1)->minItems(1)->required()->reorderable(false)
+                        ->addActionLabel('Tambah produk')->live()
+                        ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('total_harga', collect($state ?? [])->sum(fn ($item) => (int) ($item['quantity'] ?? 0) * (int) ($item['harga'] ?? 0)))),
+                    Forms\Components\TextInput::make('total_harga')
+                        ->label('Total penjualan')->prefix('Rp')->disabled()->dehydrated(false)
+                        ->afterStateHydrated(fn (Forms\Set $set, Forms\Get $get) => $set('total_harga', collect($get('orderDetails') ?? [])->sum(fn ($item) => (int) ($item['quantity'] ?? 0) * (int) ($item['harga'] ?? 0)))),
+                ]),
+            Forms\Components\Section::make('Status penjualan')
+                ->visible(fn (?Order $record): bool => $record?->fresh() !== null)
+                ->schema([
+                    Forms\Components\Placeholder::make('status_barang')
+                        ->label('Penyerahan barang')
+                        ->content(fn (?Order $record): string => match ($record?->fresh()?->status_transaksi) {
+                            'selesai' => 'Barang sudah diserahkan',
+                            'batal' => 'Penjualan dibatalkan',
+                            default => 'Barang sedang disiapkan',
+                        }),
+                    Forms\Components\Placeholder::make('status_bayar')
+                        ->label('Pembayaran')
+                        ->content(fn (?Order $record): string => match ($record?->fresh()?->status_pembayaran) {
+                            'lunas' => 'Lunas',
+                            'cicilan' => 'Dibayar sebagian',
+                            default => 'Belum dibayar',
+                        }),
+                ])->columns(2),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['orderDetails.product', 'payments']))
+            ->searchPlaceholder('Cari nomor atau pelanggan')->defaultSort('tanggal_order', 'desc')->striped()
             ->columns([
                 Tables\Columns\TextColumn::make('no_transaksi')
-                    ->searchable()
-                    ->sortable()
-                    ->label('No. Transaksi'),
-
-                Tables\Columns\TextColumn::make('nama_customer')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Customer'),
-                
-                Tables\Columns\TextColumn::make('orderDetails.product.nama_product')
-                    ->listWithLineBreaks()
-                    ->label('Products'),
-                
-                Tables\Columns\TextColumn::make('total_quantity')
-                    ->label('Total Quantity')
-                    ->getStateUsing(function (Order $record) {
-                        return $record->orderDetails->sum('quantity');
-                    }),
-                
+                    ->label('Penjualan')->weight(FontWeight::Medium)
+                    ->description(fn (Order $record): string => $record->nama_customer)
+                    ->searchable(query: fn (Builder $query, string $search) => $query->where('no_transaksi', 'like', "%{$search}%")->orWhere('nama_customer', 'like', "%{$search}%")),
                 Tables\Columns\TextColumn::make('total_harga')
-                    ->label('Total Harga')
-                    ->money('IDR')
-                    ->getStateUsing(function (Order $record) {
-                        return $record->orderDetails->sum(function ($detail) {
-                            return $detail->quantity * $detail->harga;
-                        });
-                    }),
-                
-                Tables\Columns\TextColumn::make('status_transaksi')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'proses' => 'warning',
-                        'batal' => 'danger',
-                        'selesai' => 'success',
+                    ->label('Total')->getStateUsing(fn (Order $record) => $record->orderDetails->sum('subtotal'))
+                    ->formatStateUsing(fn ($state): string => static::rupiah($state)),
+                Tables\Columns\TextColumn::make('status_pembayaran')
+                    ->label('Pembayaran')->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'lunas' => 'Lunas', 'cicilan' => 'Dibayar sebagian', default => 'Belum dibayar',
                     })
-                    ->searchable()
-                    ->sortable()
-                    ->label('Status Transaksi'),
-                
+                    ->color(fn (string $state): string => match ($state) {
+                        'lunas' => 'success', 'cicilan' => 'warning', default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('sisa_tagihan')
+                    ->label('Sisa tagihan')->getStateUsing(fn (Order $record): float => $record->remainingAmount())
+                    ->formatStateUsing(fn ($state): string => static::rupiah($state)),
+                Tables\Columns\TextColumn::make('status_transaksi')
+                    ->label('Barang')->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'selesai' => 'Diserahkan', 'batal' => 'Dibatalkan', default => 'Disiapkan',
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'selesai' => 'success', 'batal' => 'danger', default => 'warning',
+                    }),
                 Tables\Columns\TextColumn::make('tanggal_order')
-                    ->date()
-                    ->sortable()
-                    ->label('Tanggal Order'),
-                
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Tanggal penjualan')->date('d/m/Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status_transaksi')
+                    ->label('Penyerahan barang')
+                    ->options(['proses' => 'Disiapkan', 'selesai' => 'Diserahkan', 'batal' => 'Dibatalkan']),
+                Tables\Filters\SelectFilter::make('status_pembayaran')
+                    ->label('Pembayaran')
+                    ->options(['belum_bayar' => 'Belum dibayar', 'cicilan' => 'Dibayar sebagian', 'lunas' => 'Lunas']),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('print')
-                    ->label('Print Struk')
-                    ->icon('heroicon-o-printer')
-                    ->url(fn (Order $record): string => url('/admin/order/' . $record->id . '/print-struk'))
-                    ->openUrlInNewTab(),
-                Tables\Actions\DeleteAction::make()
-                    ->label('Hapus'),
+                Tables\Actions\EditAction::make()->label('Detail / bayar'),
+                Tables\Actions\Action::make('print')->label('Cetak struk')->icon('heroicon-o-printer')
+                    ->url(fn (Order $record): string => route('order.print-struk', $record))->openUrlInNewTab(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->bulkActions([])
+            ->emptyStateHeading('Belum ada penjualan yang ditampilkan')
+            ->emptyStateDescription('Buat penjualan baru atau ubah pencarian dan filter.');
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            PaymentsRelationManager::class,
-        ];
-    }
+    public static function getRelations(): array { return [PaymentsRelationManager::class]; }
 
     public static function getPages(): array
     {

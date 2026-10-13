@@ -10,7 +10,7 @@ class OrderPerMonth extends ChartWidget
 {
     protected static ?string $heading = 'Tren penjualan';
 
-    protected static ?string $description = 'Nilai order selesai dalam 6 bulan terakhir';
+    protected static ?string $description = 'Nilai penjualan selesai dalam 6 bulan terakhir';
 
     protected static ?int $sort = 2;
 

@@ -40,7 +40,7 @@ class StatsOverview extends BaseWidget
                 ->color('success')
                 ->extraAttributes(['class' => 'inv-stat inv-stat--sales']),
 
-            Stat::make('Order bulan ini', number_format($current['orders'], 0, ',', '.'))
+            Stat::make('Jumlah penjualan bulan ini', number_format($current['orders'], 0, ',', '.'))
                 ->icon('heroicon-o-shopping-bag')
                 ->description($ordersTrend['description'])
                 ->descriptionIcon($ordersTrend['icon'])
@@ -58,7 +58,7 @@ class StatsOverview extends BaseWidget
 
             Stat::make('Sisa pembayaran', $this->rupiah($remaining['amount']))
                 ->icon('heroicon-o-wallet')
-                ->description($remaining['orders'] > 0 ? number_format($remaining['orders'], 0, ',', '.').' order belum lunas' : 'Belum ada tagihan')
+                ->description($remaining['orders'] > 0 ? number_format($remaining['orders'], 0, ',', '.').' penjualan belum lunas' : 'Belum ada tagihan')
                 ->descriptionIcon($remaining['orders'] > 0 ? 'heroicon-o-clock' : 'heroicon-o-check-circle')
                 ->color($remaining['orders'] > 0 ? 'warning' : 'success')
                 ->extraAttributes(['class' => 'inv-stat inv-stat--payment']),

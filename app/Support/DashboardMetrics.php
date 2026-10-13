@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Order;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 
 class DashboardMetrics
 {
@@ -54,7 +55,7 @@ class DashboardMetrics
         $orders = Order::query()
             ->select(['id', 'total_harga'])
             ->withSum('orderDetails as calculated_total', 'subtotal')
-            ->withSum('payments as paid_total', 'jumlah_bayar')
+            ->withSum('payments as paid_total', DB::raw('jumlah_bayar - COALESCE(kembalian, 0)'))
             ->where('status_transaksi', '!=', 'batal')
             ->cursor();
 

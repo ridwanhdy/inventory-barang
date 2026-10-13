@@ -49,11 +49,12 @@ class LaporanPenjualanResource extends Resource
                     ->label('Tanggal')
                     ->date('d/m/Y')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('id')
-                    ->label('No. Order')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('customer.nama')
-                    ->label('Customer')
+                Tables\Columns\TextColumn::make('no_transaksi')
+                    ->label('Nomor penjualan')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('nama_customer')
+                    ->label('Pelanggan')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('total_harga')
                     ->label('Total Penjualan')

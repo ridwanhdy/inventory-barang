@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\KategoriResource\Pages;
 use App\Filament\Resources\KategoriResource\RelationManagers;
 use App\Models\Kategori;
+use App\Support\MasterDataUsage;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -43,6 +45,16 @@ class KategoriResource extends Resource
                 ->label('Nama Kategori')
                 ->required(),
             ]);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()?->role === 'admin' && ! MasterDataUsage::isUsed($record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
     }
 
     public static function table(Table $table): Table

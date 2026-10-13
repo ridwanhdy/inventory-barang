@@ -141,7 +141,7 @@ test('authenticated dashboard renders each widget once with empty data', functio
     $response = $this->get('/admin')->assertOk()->assertSee('Ringkasan bisnis Anda');
     $html = $response->getContent();
 
-    foreach (['Penjualan bulan ini', 'Order bulan ini', 'Produk tersedia', 'Sisa pembayaran', 'Tren penjualan', 'Pantauan inventaris', 'Penjualan terbaru'] as $heading) {
+    foreach (['Penjualan bulan ini', 'Jumlah penjualan bulan ini', 'Produk tersedia', 'Sisa pembayaran', 'Tren penjualan', 'Pantauan inventaris', 'Penjualan terbaru'] as $heading) {
         expect(substr_count($html, $heading))->toBe(1);
     }
 
@@ -150,7 +150,7 @@ test('authenticated dashboard renders each widget once with empty data', functio
 
     expect($stats->all())->toBe([
         'Penjualan bulan ini' => 'Rp 0',
-        'Order bulan ini' => '0',
+        'Jumlah penjualan bulan ini' => '0',
         'Produk tersedia' => '0',
         'Sisa pembayaran' => 'Rp 0',
     ]);
@@ -185,7 +185,7 @@ test('summary uses transaction dates and line totals and sums payments without n
         ->mapWithKeys(fn ($stat) => [$stat->getLabel() => $stat->getValue()]);
 
     expect($stats['Penjualan bulan ini'])->toBe('Rp 600.000')
-        ->and($stats['Order bulan ini'])->toBe('4')
+        ->and($stats['Jumlah penjualan bulan ini'])->toBe('4')
         ->and($stats['Produk tersedia'])->toBe('2')
         ->and($stats['Sisa pembayaran'])->toBe('Rp 510.000');
 });
@@ -219,8 +219,8 @@ test('latest orders show only five recent transaction dates and handle payment s
     $widget = Livewire::test(LatestOrders::class)
         ->assertCanSeeTableRecords($orders->reverse(), inOrder: true)
         ->assertCanNotSeeTableRecords([$older])
-        ->assertSee('Belum bayar')
-        ->assertSee('Cicilan')
+        ->assertSee('Belum dibayar')
+        ->assertSee('Dibayar sebagian')
         ->assertSee('Lunas');
 
     expect($widget->instance()->getTable()->getColumn('status_pembayaran')->formatState('tak_dikenal'))

@@ -33,6 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->brandName('Inventory Barang')
             ->login()
+            ->databaseTransactions()
             ->darkMode(false)
             ->defaultThemeMode(ThemeMode::Light)
             ->font('Poppins')

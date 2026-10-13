@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\BahanBakuResource\Pages;
 use App\Models\BahanBaku;
+use App\Support\MasterDataUsage;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -57,6 +59,16 @@ class BahanBakuResource extends Resource
                     ])
                     ->required(),
             ]);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()?->role === 'admin' && ! MasterDataUsage::isUsed($record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
     }
 
     public static function table(Table $table): Table

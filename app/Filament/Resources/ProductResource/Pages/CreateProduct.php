@@ -9,13 +9,20 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
-    protected function mutateFormDataBeforeCreate(array $data): array
-{
-    $data['jenis_id'] = 2; // ganti dengan id jenis bahan baku
-    return $data;
-}
 
-protected function getFormActions(): array
+    public function boot(): void
+    {
+        app()->setLocale('id');
+    }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['foto'] = $data['foto'] ?? '';
+
+        return $data;
+    }
+
+    protected function getFormActions(): array
     {
         return [
             $this->getCreateFormAction()->label('Tambah'),

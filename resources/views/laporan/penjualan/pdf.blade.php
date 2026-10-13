@@ -82,8 +82,8 @@
             <tr>
                 <th>No</th>
                 <th>Tanggal</th>
-                <th>No. Order</th>
-                <th>Customer</th>
+                <th>Nomor penjualan</th>
+                <th>Pelanggan</th>
                 <th>Total Penjualan</th>
                 <th>Status Pembayaran</th>
             </tr>
@@ -93,8 +93,8 @@
             <tr>
                 <td>{{ $loop->iteration }}</td>
                 <td>{{ date('d/m/Y', strtotime($order->tanggal_order)) }}</td>
-                <td>{{ $order->id }}</td>
-                <td>{{ $order->customer->nama }}</td>
+                <td>{{ $order->no_transaksi ?? '#' . $order->id }}</td>
+                <td>{{ $order->nama_customer }}</td>
                 <td class="text-right">Rp {{ number_format($order->total_harga, 0, ',', '.') }}</td>
                 <td>{{ ucfirst(str_replace('_', ' ', $order->status_pembayaran)) }}</td>
             </tr>
@@ -116,4 +116,4 @@
         Dicetak pada: {{ date('d/m/Y H:i:s') }}
     </div>
 </body>
-</html> 
+</html>

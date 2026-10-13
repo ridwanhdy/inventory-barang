@@ -11,19 +11,20 @@ use Illuminate\Support\Facades\Response;
 class PrintInvoice extends ViewRecord
 {
     protected static string $resource = OrderResource::class;
+    protected static ?string $title = 'Bukti penjualan';
 
     protected function getHeaderActions(): array
     {
         return [
             Actions\Action::make('print')
-                ->label('Print Invoice')
+                ->label('Cetak struk')
                 ->icon('heroicon-o-printer')
                 ->action(function () {
-                    $order = $this->record;
+                    $order = $this->record->refresh()->load(['orderDetails.product', 'payments']);
                     $totalHarga = $order->orderDetails->sum(function ($detail) {
                         return $detail->quantity * $detail->harga;
                     });
-                    $totalBayar = $order->payments->sum('jumlah_bayar');
+                    $totalBayar = $order->paidAmount();
                     
                     $pdf = PDF::loadView('pdf.invoice', [
                         'order' => $order,
@@ -31,7 +32,8 @@ class PrintInvoice extends ViewRecord
                         'payments' => $order->payments,
                         'totalHarga' => $totalHarga,
                         'totalBayar' => $totalBayar,
-                        'sisaBayar' => max(0, $totalHarga - $totalBayar),
+                        'sisaBayar' => $order->remainingAmount(),
+                        'totalKembalian' => $order->payments->sum('kembalian'),
                     ]);
 
                     return Response::streamDownload(function () use ($pdf) {
@@ -40,4 +42,4 @@ class PrintInvoice extends ViewRecord
                 }),
         ];
     }
-} 
+}
