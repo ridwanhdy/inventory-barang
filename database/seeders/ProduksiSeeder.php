@@ -6,7 +6,9 @@ use App\Models\BahanBaku;
 use App\Models\Product;
 use App\Models\Produksi;
 use App\Models\ProduksiDetail;
+use App\Support\ProductionWorkflow;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ProduksiSeeder extends Seeder
 {
@@ -71,28 +73,32 @@ class ProduksiSeeder extends Seeder
 
         foreach ($produksis as $data) {
             $product = Product::where('nama_product', $data['product'])->first();
-            if (!$product) {
+            if (! $product) {
                 continue;
             }
 
-            $produksi = Produksi::create([
-                'product_id' => $product->id,
-                'jumlah_produksi' => $data['jumlah_produksi'],
-                'produksi_mulai' => $data['produksi_mulai'],
-                'produksi_selesai' => $data['produksi_selesai'],
-                'status' => $data['status'],
-            ]);
+            DB::transaction(function () use ($product, $data): void {
+                $produksi = Produksi::create([
+                    'product_id' => $product->id,
+                    'jumlah_produksi' => $data['jumlah_produksi'],
+                    'produksi_mulai' => $data['produksi_mulai'],
+                ]);
 
-            foreach ($data['bahan'] as $bahan) {
-                $bahanBaku = BahanBaku::where('nama_bahan', $bahan['nama'])->first();
-                if ($bahanBaku) {
-                    ProduksiDetail::create([
-                        'produksi_id' => $produksi->id,
-                        'bahan_baku_id' => $bahanBaku->id,
-                        'jumlah_digunakan' => $bahan['jumlah'],
-                    ]);
+                foreach ($data['bahan'] as $bahan) {
+                    $bahanBaku = BahanBaku::where('nama_bahan', $bahan['nama'])->first();
+                    if ($bahanBaku) {
+                        ProduksiDetail::create([
+                            'produksi_id' => $produksi->id,
+                            'bahan_baku_id' => $bahanBaku->id,
+                            'jumlah_digunakan' => $bahan['jumlah'],
+                        ]);
+                    }
                 }
-            }
+                $produksi = ProductionWorkflow::start($produksi, $data['produksi_mulai']->toDateString());
+                if ($data['status'] === Produksi::COMPLETED) {
+                    ProductionWorkflow::complete($produksi, $data['jumlah_produksi'], 0, $data['produksi_selesai']->toDateString());
+                }
+            });
         }
 
         $this->command->info('Data produksi kaos & jaket berhasil di-seed!');

@@ -143,12 +143,26 @@ orders     ──→ order_details
 
 1. **Input master** — satuan, kategori, pemasok, bahan baku, produk
 2. **Beli bahan** — buat pembelian → stok bahan naik otomatis
-3. **Produksi** — pilih produk, isi bahan dipakai, set status *Selesai* → stok produk naik
+3. **Produksi** — buat rencana dan kebutuhan bahan → mulai produksi → catat hasil sebenarnya dan sisa bahan → selesai
 4. **Jual** — buat order + detail produk → stok produk turun
 5. **Bayar** — catat payment hingga lunas
 6. **Lapor** — cetak PDF stok / penjualan
 
 ---
+
+## Alur Produksi
+
+Setiap batch memiliki nomor produksi dan satu varian produk (warna dan ukuran). Target rencana dipisahkan dari hasil sebenarnya.
+
+1. **Rencana:** tentukan produk, target, rencana tanggal mulai, dan total kebutuhan bahan untuk satu batch. Menyimpan rencana belum mengurangi stok bahan.
+2. **Mulai produksi:** periksa bahan dan catat tanggal mulai sebenarnya. Sistem memeriksa stok seluruh bahan, lalu mengurangi stok secara bersamaan. Bila satu bahan tidak cukup, produksi tetap berupa rencana dan seluruh stok tetap.
+3. **Sedang diproduksi:** catat pengambilan bahan tambahan bila diperlukan. Untuk bahan yang sama, isi jumlah tambahan saja; sistem menggabungkannya ke jumlah bahan yang telah diambil.
+4. **Catat hasil dan selesaikan:** isi hasil layak jual, barang rusak/tidak layak jual, tanggal selesai sebenarnya, dan jumlah sisa bahan yang benar-benar dikembalikan. Hanya hasil layak jual menambah stok produk. Jelaskan pada catatan hasil bila total hasil berbeda dari target.
+5. **Pembatalan:** isi alasan pembatalan. Rencana yang belum dimulai tidak memengaruhi stok. Untuk produksi berjalan, hanya sisa bahan yang dicatat sebagai pengembalian yang kembali ke stok; bahan terpakai tetap tercatat.
+
+Pemakaian akhir bahan = bahan diambil − bahan dikembalikan. Produksi selesai atau dibatalkan menjadi riwayat tetap dan tidak dapat diubah, dimulai ulang, atau dihapus dari halaman produksi.
+
+Migrasi produksi mempertahankan stok lama. Jumlah hasil produksi selesai pada data lama mengikuti jumlah produksi yang tersimpan dan diberi keterangan sebagai data lama; jumlah barang rusak tidak diasumsikan nol.
 
 ## Tech Package
 
