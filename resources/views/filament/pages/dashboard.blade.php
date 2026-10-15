@@ -32,6 +32,11 @@
                         <x-filament::icon icon="heroicon-o-cube" class="inv-icon" />
                         Lihat produk
                     </a>
+                @elseif (\App\Filament\Resources\ProductDetailResource::canViewAny())
+                    <a href="{{ \App\Filament\Resources\ProductDetailResource::getUrl() }}" class="inv-hero-action">
+                        <x-filament::icon icon="heroicon-o-cube" class="inv-icon" />
+                        Lihat stok produk
+                    </a>
                 @endif
             </div>
         </div>

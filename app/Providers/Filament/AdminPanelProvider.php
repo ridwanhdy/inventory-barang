@@ -47,30 +47,25 @@ class AdminPanelProvider extends PanelProvider
             )
             ->colors([
                 'danger' => Color::Rose,
-                'gray' => Color::Gray,
-                // Keep the brand colors at shade 500 and use darker shades for readable text.
-                'primary' => array_replace(Color::hex('#7EC151'), [
-                    600 => '80, 127, 47',
-                    700 => '63, 102, 37',
-                    800 => '49, 90, 31',
-                    900 => '39, 71, 26',
-                    950 => '24, 51, 34',
+                'gray' => array_replace(Color::Slate, [
+                    500 => '101, 112, 135',
+                    600 => '78, 91, 117',
+                    700 => '50, 67, 102',
+                    800 => '34, 57, 111',
+                    900 => '13, 28, 66',
+                    950 => '1, 7, 54',
                 ]),
-                'info' => array_replace(Color::hex('#92EEFF'), [
-                    600 => '21, 88, 107',
-                    700 => '17, 73, 89',
-                    800 => '13, 58, 71',
-                    900 => '10, 44, 54',
-                    950 => '6, 28, 34',
+                // Use the supplied navy shades for actions, links, and focus states.
+                'primary' => array_replace(Color::hex('#22396F'), [
+                    600 => '34, 57, 111',
+                    700 => '13, 28, 66',
+                    800 => '10, 22, 61',
+                    900 => '1, 7, 54',
+                    950 => '1, 5, 35',
                 ]),
-                'success' => array_replace(Color::hex('#C4F7CA'), [
-                    600 => '40, 90, 52',
-                    700 => '33, 74, 43',
-                    800 => '26, 59, 34',
-                    900 => '20, 45, 26',
-                    950 => '13, 29, 17',
-                ]),
-                'warning' => Color::Orange,
+                'info' => Color::hex('#22396F'),
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

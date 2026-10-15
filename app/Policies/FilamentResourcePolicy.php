@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Database\Eloquent\Model;
 
 class FilamentResourcePolicy
 {
@@ -11,47 +12,61 @@ class FilamentResourcePolicy
 
     public function viewAny(User $user): bool
     {
-        return true; // All authenticated users can view the list
+        return $user->isAdmin();
     }
 
-    public function view(User $user, $model): bool
+    public function view(User $user, Model $model): bool
     {
-        if ($user->role === 'admin') {
-            return true; // Admin can view everything
-        }
-
-        // Kasir can only view Customer and Order resources
-        return in_array(class_basename($model), ['Customer', 'Order']);
+        return $user->isAdmin();
     }
 
     public function create(User $user): bool
     {
-        if ($user->role === 'admin') {
-            return true; // Admin can create everything
-        }
-
-        // Kasir can only create Customer and Order resources
-        $resource = request()->route()->parameter('resource');
-        return in_array($resource, ['customers', 'orders']);
+        return $user->isAdmin();
     }
 
-    public function update(User $user, $model): bool
+    public function update(User $user, Model $model): bool
     {
-        if ($user->role === 'admin') {
-            return true; // Admin can update everything
-        }
-
-        // Kasir can only update Customer and Order resources
-        return in_array(class_basename($model), ['Customer', 'Order']);
+        return $user->isAdmin();
     }
 
-    public function delete(User $user, $model): bool
+    public function delete(User $user, Model $model): bool
     {
-        if ($user->role === 'admin') {
-            return true; // Admin can delete everything
-        }
-
-        // Kasir can only delete Customer and Order resources
-        return in_array(class_basename($model), ['Customer', 'Order']);
+        return $user->isAdmin();
     }
-} 
+
+    public function deleteAny(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function forceDelete(User $user, Model $model): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function restore(User $user, Model $model): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function restoreAny(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function replicate(User $user, Model $model): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function reorder(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+}

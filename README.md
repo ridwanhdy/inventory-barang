@@ -1,6 +1,6 @@
 # Inventory Barang
 
-Sistem inventory & produksi untuk usaha manufaktur (konveksi kaos & jaket).  
+Sistem inventory & produksi untuk usaha konveksi, dengan data demo khusus kaos polos.
 Mengelola alur dari pembelian bahan baku → produksi → penjualan → pembayaran.
 
 **Stack:** Laravel 12 · Filament 3 · MySQL · DomPDF
@@ -83,10 +83,10 @@ php artisan serve
 
 Akses: [http://localhost:8000/admin](http://localhost:8000/admin)
 
-| | |
-|---|---|
-| **Email** | `admin@admin.com` |
-| **Password** | `password` |
+| Peran | Email | Password |
+|---|---|---|
+| Admin | `admin@admin.com` | `password` |
+| Kasir | `kasir@kasir.com` | `kasir` |
 
 ---
 
@@ -109,6 +109,10 @@ Akses: [http://localhost:8000/admin](http://localhost:8000/admin)
 - Laporan stok produk
 - Laporan penjualan
 
+Pilih **Jenis periode** pada laporan: semua periode, rentang tanggal, rentang bulan (dapat melintasi tahun), atau rentang tahun. Isi batas awal dan akhir, lalu klik **Terapkan filter**. Tombol **Cetak PDF** juga menerapkan pilihan periode terbaru dan mencetak seluruh hasil sesuai pencarian, filter, serta urutan tabel. Cetak per baris atau beberapa baris melalui **Cetak PDF Terpilih** tetap tersedia.
+
+Laporan penjualan hanya memuat transaksi selesai dan menampilkan jumlah transaksi serta total penjualan. Pada laporan stok, periode mengacu pada **pembaruan stok terakhir dalam WIB**; jumlah yang dicetak adalah saldo stok saat ini, bukan saldo historis pada tanggal tersebut. PDF mencantumkan periode, filter, ringkasan, dan waktu cetak. Rentang terbalik atau belum lengkap ditolak; hasil kosong menampilkan pemberitahuan sebelum mencetak.
+
 ---
 
 ## Struktur Database (inti)
@@ -129,13 +133,30 @@ orders     ──→ order_details
 
 ## Seeder
 
-`php artisan migrate --seed` mengisi:
+`php artisan migrate --seed` mengisi data demo **30 hari terakhir, termasuk hari saat seeder dijalankan, dalam WIB**. Contoh dijalankan pada 15 Oktober 2026: periode 16 September–15 Oktober 2026.
 
-- 1 admin
-- Satuan, kategori, pemasok
-- Produk kaos & jaket + stok awal
-- Bahan baku (kain, benang, resleting, dll) + stok awal
-- Sample pembelian & produksi
+- Akun admin dan kasir sesuai tabel di atas.
+- 3 satuan, 5 kategori, dan 3 pemasok dummy.
+- **1.152 varian kaos polos**: seluruh kombinasi 9 ukuran, 16 warna, dan 8 jenis kain. Setiap varian memiliki harga dan stok sendiri.
+- Ukuran: XS, S, M, L, XL, XXL, 3XL, 4XL, 5XL.
+- Warna: Hitam, Putih, Navy, Abu-abu Misty, Abu-abu Tua, Merah, Maroon, Biru Royal, Biru Muda, Hijau Botol, Hijau Army, Kuning, Oranye, Cokelat, Beige, Ungu.
+- Kain: Cotton Combed 20s/24s/30s/40s, Cotton Carded 24s, CVC, TC, dan Cotton Bamboo.
+- 148 bahan baku: kain per warna, rib sesuai warna, benang, label ukuran, label merek, dan plastik kemasan.
+- Pembelian dan produksi setiap hari, termasuk contoh rencana, proses berjalan, hasil baik/rusak, pengembalian sisa bahan, dan pembatalan.
+- 120 penjualan beserta rincian barang dan pembayaran: tunai, kembalian, transfer, cicilan, lunas, belum dibayar, dan pembatalan.
+- Riwayat pergerakan bahan baku yang mengikuti penerimaan, pemakaian, dan pengembalian bahan.
+
+Stok awal nol; saldo akhir berasal dari pembelian → pemakaian bahan → hasil produksi → penjualan. Data ini juga mengisi dashboard, laporan stok, dan laporan penjualan. Foto produk memakai gambar pengganti bawaan aplikasi.
+
+Menjalankan ulang `php artisan db:seed` pada periode yang sama tidak menggandakan transaksi dummy atau menambah stok lagi. Seeder memperbarui akun demo dan master data serta mempertahankan data lain yang sudah ada.
+
+Untuk **mengganti seluruh isi database lama** dengan dataset baru, cadangkan database terlebih dahulu, lalu jalankan:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Perintah tersebut menghapus seluruh tabel dan data sebelum membuat ulang database. Gunakan `php artisan db:seed` bila data lama perlu dipertahankan.
 
 ---
 

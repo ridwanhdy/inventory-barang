@@ -2,49 +2,40 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Pemasok;
+use Database\Seeders\Support\DemoPeriod;
+use Illuminate\Database\Seeder;
 
 class PemasokSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $pemasoks = [
-            [
-                'nama_pemasok' => 'PT Sukses Jaya Textile',
-                'nomor_telepon' => '021-5550123',
-                'alamat' => 'Jl. Industri No. 45, Jakarta Barat',
-            ],
-            [
-                'nama_pemasok' => 'CV Maju Bersama',
-                'nomor_telepon' => '021-5550456',
-                'alamat' => 'Jl. Raya Bekasi Km. 25, Bekasi',
-            ],
-            [
-                'nama_pemasok' => 'UD Makmur Sejahtera',
-                'nomor_telepon' => '021-5550789',
-                'alamat' => 'Jl. Pasar Baru No. 12, Jakarta Pusat',
-            ],
-            [
-                'nama_pemasok' => 'PT Global Supply',
-                'nomor_telepon' => '021-5550321',
-                'alamat' => 'Jl. Sudirman No. 78, Jakarta Selatan',
-            ],
-            [
-                'nama_pemasok' => 'CV Mitra Abadi',
-                'nomor_telepon' => '021-5550654',
-                'alamat' => 'Jl. Gatot Subroto No. 34, Jakarta Selatan',
-            ],
-        ];
+        DemoPeriod::at(DemoPeriod::start(), function (): void {
+            $suppliers = [
+                [
+                    'nama_pemasok' => 'PT Demo Tekstil Nusantara',
+                    'nomor_telepon' => '0812-0000-1001',
+                    'alamat' => 'Jl. Contoh Tekstil No. 1, Bandung (data dummy)',
+                ],
+                [
+                    'nama_pemasok' => 'CV Demo Rib dan Benang',
+                    'nomor_telepon' => '0812-0000-1002',
+                    'alamat' => 'Jl. Contoh Konveksi No. 2, Bandung (data dummy)',
+                ],
+                [
+                    'nama_pemasok' => 'UD Demo Label dan Kemasan',
+                    'nomor_telepon' => '0812-0000-1003',
+                    'alamat' => 'Jl. Contoh Kemasan No. 3, Bandung (data dummy)',
+                ],
+            ];
 
-        foreach ($pemasoks as $pemasok) {
-            Pemasok::create($pemasok);
-        }
-
-        $this->command->info('Pemasok data seeded successfully!');
+            foreach ($suppliers as $supplier) {
+                Pemasok::updateOrCreate(['nama_pemasok' => $supplier['nama_pemasok']], $supplier)
+                    ->forceFill([
+                        'created_at' => DemoPeriod::start()->utc(),
+                        'updated_at' => DemoPeriod::start()->utc(),
+                    ])->save();
+            }
+        });
     }
-} 
+}

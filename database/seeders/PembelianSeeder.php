@@ -6,72 +6,95 @@ use App\Models\BahanBaku;
 use App\Models\Pemasok;
 use App\Models\Pembelian;
 use App\Models\PembelianDetail;
+use Database\Seeders\Support\DemoPeriod;
+use Database\Seeders\Support\KaosPolosCatalog;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use LogicException;
 
 class PembelianSeeder extends Seeder
 {
     public function run(): void
     {
-        $pembelians = [
-            [
-                'pemasok' => 'PT Sukses Jaya Textile',
-                'tanggal_pembelian' => now()->subDays(15),
-                'catatan' => 'Pembelian kain untuk produksi kaos',
-                'details' => [
-                    ['nama' => 'Kain Cotton Combed 30s', 'quantity' => 100],
-                    ['nama' => 'Kain Cotton Combed 24s', 'quantity' => 80],
-                    ['nama' => 'Rib Cotton 1x1', 'quantity' => 50],
-                ],
-            ],
-            [
-                'pemasok' => 'CV Maju Bersama',
-                'tanggal_pembelian' => now()->subDays(10),
-                'catatan' => 'Pembelian kain untuk produksi jaket',
-                'details' => [
-                    ['nama' => 'Kain Fleece', 'quantity' => 60],
-                    ['nama' => 'Kain Taslan', 'quantity' => 50],
-                    ['nama' => 'Kain Wool Blend', 'quantity' => 40],
-                ],
-            ],
-            [
-                'pemasok' => 'UD Makmur Sejahtera',
-                'tanggal_pembelian' => now()->subDays(5),
-                'catatan' => 'Pembelian aksesoris jahit & sablon',
-                'details' => [
-                    ['nama' => 'Benang Jahit Polyester', 'quantity' => 20],
-                    ['nama' => 'Kancing Plastik 4 Lubang', 'quantity' => 300],
-                    ['nama' => 'Resleting YKK 50cm', 'quantity' => 100],
-                    ['nama' => 'Resleting YKK 70cm', 'quantity' => 80],
-                    ['nama' => 'Label Woven', 'quantity' => 500],
-                    ['nama' => 'Tinta Sablon Plastisol', 'quantity' => 10],
-                ],
-            ],
-        ];
+        $suppliers = Pemasok::query()->orderBy('nama_pemasok')->get();
+        if ($suppliers->isEmpty()) {
+            throw new LogicException('Jalankan PemasokSeeder sebelum PembelianSeeder.');
+        }
 
-        foreach ($pembelians as $data) {
-            $pemasok = Pemasok::where('nama_pemasok', $data['pemasok'])->first();
-            if (!$pemasok) {
-                continue;
+        $materials = BahanBaku::query()->get()->keyBy('nama_bahan');
+        $materialNames = [];
+        foreach (array_keys(KaosPolosCatalog::fabrics()) as $fabric) {
+            foreach (KaosPolosCatalog::colors() as $color) {
+                $materialNames[] = KaosPolosCatalog::fabricName($fabric, $color);
             }
-
-            $pembelian = Pembelian::create([
-                'pemasok_id' => $pemasok->id,
-                'tanggal_pembelian' => $data['tanggal_pembelian'],
-                'catatan' => $data['catatan'],
-            ]);
-
-            foreach ($data['details'] as $detail) {
-                $bahanBaku = BahanBaku::where('nama_bahan', $detail['nama'])->first();
-                if ($bahanBaku) {
-                    PembelianDetail::create([
-                        'pembelian_id' => $pembelian->id,
-                        'bahan_baku_id' => $bahanBaku->id,
-                        'quantity' => $detail['quantity'],
-                    ]);
-                }
+        }
+        foreach (KaosPolosCatalog::colors() as $color) {
+            $materialNames[] = KaosPolosCatalog::ribName($color);
+        }
+        $materialNames = array_merge($materialNames, [
+            'Benang Jahit Polyester', 'Label Ukuran Kaos', 'Label Merek Kaos', 'Plastik Kemasan Kaos',
+        ]);
+        foreach ($materialNames as $name) {
+            if (! $materials->has($name)) {
+                throw new LogicException('Bahan baku katalog belum tersedia: '.$name);
             }
         }
 
-        $this->command->info('Data pembelian bahan baku kaos & jaket berhasil di-seed!');
+        // Every unit of opening inventory is an actual receipt, so stock reports reconcile.
+        $rotatingMaterials = array_values(array_filter($materialNames, fn (string $name): bool => $name !== 'Benang Jahit Polyester'));
+        for ($day = 0; $day < 30; $day++) {
+            $note = sprintf('DEMO-KAOS-PEMBELIAN-%02d | %s', $day + 1, $day === 0
+                ? 'Penerimaan awal seluruh kain, warna, rib dan perlengkapan kaos polos.'
+                : 'Pengisian ulang bahan kaos polos untuk produksi harian.');
+            if (Pembelian::query()->where('catatan', $note)->exists()) {
+                continue;
+            }
+
+            $receipts = [];
+            if ($day === 0) {
+                foreach ($materialNames as $name) {
+                    $receipts[$name] = $this->receiptQuantity($name, true);
+                }
+            } else {
+                // Six rotating receipts cover the complete catalog again during the month.
+                for ($slot = 0; $slot < 6; $slot++) {
+                    $name = $rotatingMaterials[(($day - 1) * 6 + $slot) % count($rotatingMaterials)];
+                    $receipts[$name] = $this->receiptQuantity($name, false);
+                }
+                $receipts['Benang Jahit Polyester'] = 2;
+            }
+
+            DemoPeriod::at(DemoPeriod::day($day, 7), function () use ($day, $note, $receipts, $materials, $suppliers): void {
+                DB::transaction(function () use ($day, $note, $receipts, $materials, $suppliers): void {
+                    $purchase = Pembelian::create([
+                        'pemasok_id' => $suppliers[$day % $suppliers->count()]->id,
+                        'tanggal_pembelian' => DemoPeriod::day($day)->toDateString(),
+                        'catatan' => $note,
+                    ]);
+                    foreach ($receipts as $name => $quantity) {
+                        // Model events credit the authoritative material stock.
+                        PembelianDetail::create([
+                            'pembelian_id' => $purchase->id,
+                            'bahan_baku_id' => $materials[$name]->id,
+                            'quantity' => $quantity,
+                        ]);
+                    }
+                });
+            });
+        }
+
+        $this->command?->info('Penerimaan bahan kaos polos selama 30 hari berhasil disiapkan.');
+    }
+
+    private function receiptQuantity(string $name, bool $opening): float
+    {
+        if ($name === 'Benang Jahit Polyester') {
+            return $opening ? 50 : 2;
+        }
+        if (in_array($name, ['Label Ukuran Kaos', 'Label Merek Kaos', 'Plastik Kemasan Kaos'], true)) {
+            return $opening ? 100000 : 500;
+        }
+
+        return $opening ? 1000 : 50;
     }
 }

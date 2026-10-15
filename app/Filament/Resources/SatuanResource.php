@@ -34,7 +34,7 @@ class SatuanResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->role === 'admin';
+        return static::canViewAny();
     }
 
     public static function form(Form $form): Form

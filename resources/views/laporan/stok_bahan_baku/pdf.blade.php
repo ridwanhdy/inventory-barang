@@ -1,51 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="utf-8">
     <title>Laporan Stok Bahan Baku</title>
-    <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; }
-        th { background: #eee; }
-        h2 { margin-bottom: 0; }
-        .badge-danger { color: #fff; background: #dc2626; padding: 2px 6px; border-radius: 4px; }
-        .badge-warning { color: #fff; background: #f59e42; padding: 2px 6px; border-radius: 4px; }
-        .badge-success { color: #fff; background: #16a34a; padding: 2px 6px; border-radius: 4px; }
-    </style>
+    @include('laporan.partials.pdf-styles')
 </head>
 <body>
-    <h2>Laporan Stok Bahan Baku</h2>
-    @if(isset($tanggalAwal) && isset($tanggalAkhir))
-        <p>Periode: {{ date('d/m/Y', strtotime($tanggalAwal)) }} - {{ date('d/m/Y', strtotime($tanggalAkhir)) }}</p>
-    @endif
-    <table>
+    @include('laporan.partials.pdf-header', ['reportTitle' => 'Laporan Stok Bahan Baku'])
+    @include('laporan.partials.pdf-stock-summary')
+
+    <p class="notice">Stok saat ini; periode menyaring waktu pembaruan stok, bukan saldo historis.<br>Jumlah item menunjukkan jumlah catatan stok. Status stok rendah mengikuti batas minimum yang telah diatur.</p>
+    <table class="data-table">
         <thead>
             <tr>
-                <th>No</th>
-                <th>Nama Bahan</th>
-                <th>Kategori</th>
-                <th>Satuan</th>
-                <th>Stok</th>
+                <th style="width: 4%;">No</th>
+                <th style="width: 29%;">Nama bahan baku</th>
+                <th style="width: 15%;">Kategori</th>
+                <th style="width: 10%;">Satuan</th>
+                <th class="text-right" style="width: 9%;">Stok</th>
+                <th style="width: 16%;">Status stok</th>
+                <th style="width: 17%;">Diperbarui (WIB)</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($details as $i => $detail)
+            @forelse($details as $detail)
+                @php
+                    $stok = $detail->stok;
+                    $minimum = \App\Support\StockPresentation::minimum($detail);
+                    $status = \App\Support\StockPresentation::status($stok, $minimum);
+                    $color = \App\Support\StockPresentation::color($stok, $minimum);
+                @endphp
                 <tr>
-                    <td>{{ $i+1 }}</td>
-                    <td>{{ $detail->bahanBaku->nama_bahan ?? '-' }}</td>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td><strong>{{ $detail->bahanBaku->nama_bahan ?? '-' }}</strong></td>
                     <td>{{ $detail->bahanBaku->kategori->nama_kategori ?? '-' }}</td>
                     <td>{{ $detail->bahanBaku->satuan->nama_satuan ?? '-' }}</td>
-                    <td>
-                        @php
-                            $stok = $detail->stok;
-                            $badge = $stok < 5 ? 'badge-danger' : ($stok < 10 ? 'badge-warning' : 'badge-success');
-                        @endphp
-                        <span class="{{ $badge }}">{{ $stok }}</span>
-                    </td>
+                    <td class="text-right">{{ $stok === null ? '-' : rtrim(rtrim(number_format((float) $stok, 2, ',', '.'), '0'), ',') }}</td>
+                    <td><span class="status status-{{ $color }}">{{ $status }}</span></td>
+                    <td>{{ $detail->updated_at ? $detail->updated_at->copy()->timezone('Asia/Jakarta')->format('d/m/Y H:i') : '-' }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr><td colspan="7" class="empty-state">Tidak ada data stok bahan baku untuk periode dan filter yang dipilih.</td></tr>
+            @endforelse
         </tbody>
     </table>
 </body>
-</html> 
+</html>

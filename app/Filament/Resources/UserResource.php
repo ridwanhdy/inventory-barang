@@ -30,7 +30,7 @@ class UserResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->role === 'admin';
+        return static::canViewAny();
     }
 
     public static function form(Form $form): Form
@@ -38,25 +38,35 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label('Nama')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
+                    ->label('Email')
                     ->email()
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('password')
+                    ->label('Kata sandi')
                     ->password()
-                    ->required()
                     ->maxLength(255)
+                    ->afterStateHydrated(fn (Forms\Components\TextInput $component) => $component->state(null))
                     ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                     ->dehydrated(fn ($state) => filled($state))
-                    ->required(fn (string $context): bool => $context === 'create'),
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->helperText(fn (string $operation): ?string => $operation === 'edit'
+                        ? 'Kosongkan jika kata sandi tidak diubah.'
+                        : null),
                 Forms\Components\Select::make('role')
+                    ->label('Peran')
                     ->options([
                         'admin' => 'Admin',
                         'kasir' => 'Kasir',
                     ])
+                    ->default('kasir')
+                    ->in(['admin', 'kasir'])
+                    ->helperText('Admin mengakses seluruh fitur. Kasir mengakses dashboard, penjualan, laporan, dan stok.')
                     ->required(),
             ]);
     }
@@ -78,20 +88,31 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('role')
+                    ->label('Peran')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'admin' => 'Admin',
+                        'kasir' => 'Kasir',
+                        default => 'Peran tidak dikenal',
+                    })
+                    ->color(fn (?string $state): string => match ($state) {
                         'admin' => 'danger',
                         'kasir' => 'success',
+                        default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -100,9 +121,10 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label('Ubah'),
                 Tables\Actions\DeleteAction::make()
-                ->label('Hapus'),
+                    ->label('Hapus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

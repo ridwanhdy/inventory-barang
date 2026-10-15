@@ -31,10 +31,13 @@ class OrderPerMonth extends ChartWidget
                 [
                     'label' => 'Penjualan',
                     'data' => array_column($months, 'sales'),
-                    'borderColor' => '#7EC151',
-                    'backgroundColor' => 'rgba(196, 247, 202, 0.35)',
-                    'pointBackgroundColor' => '#92EEFF',
-                    'pointBorderColor' => '#7EC151',
+                    'borderColor' => '#22396F',
+                    'backgroundColor' => 'rgba(34, 57, 111, 0.08)',
+                    'pointBackgroundColor' => '#FCF1D0',
+                    'pointBorderColor' => '#22396F',
+                    'pointBorderWidth' => 2,
+                    'pointHoverBackgroundColor' => '#FCF1D0',
+                    'pointHoverBorderColor' => '#010736',
                     'fill' => true,
                     'tension' => 0.4,
                     'borderWidth' => 3,
@@ -56,6 +59,12 @@ class OrderPerMonth extends ChartWidget
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    backgroundColor: '#0D1C42',
+                    titleColor: '#FCF1D0',
+                    bodyColor: '#FCF1D0',
+                    borderColor: '#22396F',
+                    borderWidth: 1,
+                    padding: 12,
                     callbacks: {
                         label: (context) => 'Penjualan: ' + new Intl.NumberFormat('id-ID', {
                             style: 'currency', currency: 'IDR', maximumFractionDigits: 0
@@ -64,10 +73,17 @@ class OrderPerMonth extends ChartWidget
                 }
             },
             scales: {
-                x: { grid: { display: false } },
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: { color: '#5F6A80' }
+                },
                 y: {
                     beginAtZero: true,
+                    grid: { color: 'rgba(13, 28, 66, 0.07)' },
+                    border: { display: false },
                     ticks: {
+                        color: '#5F6A80',
                         maxTicksLimit: 5,
                         callback: (value) => 'Rp ' + new Intl.NumberFormat('id-ID', {
                             notation: 'compact', maximumFractionDigits: 1

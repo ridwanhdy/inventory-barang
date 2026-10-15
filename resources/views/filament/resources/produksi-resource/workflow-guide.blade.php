@@ -1,9 +1,9 @@
 <div class="production-guide">
     <style>
-        .production-guide { padding: 1rem 1.25rem; background: #f3f8ee; border: 1px solid #d7e8c9; border-radius: .75rem; color: #233b23; }
+        .production-guide { padding: 1rem 1.25rem; background: var(--inv-surface-raised); border: 1px solid var(--inv-border); border-radius: .75rem; color: var(--inv-ink); }
         .production-guide ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: .75rem; }
         .production-guide li { list-style: none; }
-        .production-guide p { margin-top: .25rem; font-size: .8rem; line-height: 1.5; color: #4a5f49; }
+        .production-guide p { margin-top: .25rem; font-size: .8rem; line-height: 1.5; color: var(--inv-muted); }
         .production-guide strong { font-size: .85rem; }
         @media (max-width: 640px) { .production-guide ol { grid-template-columns: 1fr; gap: .65rem; } }
     </style>

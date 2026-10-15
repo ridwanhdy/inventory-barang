@@ -2,30 +2,25 @@
 
 namespace App\Filament\Resources\LaporanStokBahanBakuResource\Pages;
 
+use App\Filament\Resources\Concerns\InteractsWithReportPeriod;
 use App\Filament\Resources\LaporanStokBahanBakuResource;
 use Filament\Resources\Pages\ListRecords;
 
 class ListLaporanStokBahanBaku extends ListRecords
 {
+    use InteractsWithReportPeriod;
+
     protected static string $resource = LaporanStokBahanBakuResource::class;
+
+    public function getSubheading(): ?string
+    {
+        return 'Periode mengikuti tanggal pembaruan stok terakhir. Jumlah yang ditampilkan adalah saldo stok saat ini, bukan saldo historis pada periode tersebut.';
+    }
 
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\Action::make('cetak_pdf')
-                ->label('Cetak Semua Laporan Ke PDF')
-                ->icon('heroicon-o-printer')
-                ->action(function () {
-                    $records = $this->getFilteredTableQuery()->get();
-                    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.stok_bahan_baku.pdf', [
-                        'details' => $records,
-                        'tanggalAwal' => $records->min('created_at'),
-                        'tanggalAkhir' => $records->max('created_at'),
-                    ]);
-                    return response()->streamDownload(function () use ($pdf) {
-                        echo $pdf->output();
-                    }, 'laporan-stok-bahan-baku.pdf');
-                }),
+            $this->reportPdfAction('laporan.stok_bahan_baku.pdf', 'laporan-stok-bahan-baku.pdf', 'details'),
         ];
     }
-} 
+}

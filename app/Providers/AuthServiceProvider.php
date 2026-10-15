@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
+use App\Models;
 use App\Policies\FilamentResourcePolicy;
+use App\Policies\InventoryStockPolicy;
+use App\Policies\SalesPolicy;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -14,7 +16,23 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        //
+        Models\User::class => FilamentResourcePolicy::class,
+        Models\Product::class => FilamentResourcePolicy::class,
+        Models\BahanBaku::class => FilamentResourcePolicy::class,
+        Models\Kategori::class => FilamentResourcePolicy::class,
+        Models\Satuan::class => FilamentResourcePolicy::class,
+        Models\Pemasok::class => FilamentResourcePolicy::class,
+        Models\Pembelian::class => FilamentResourcePolicy::class,
+        Models\PembelianDetail::class => FilamentResourcePolicy::class,
+        Models\Produksi::class => FilamentResourcePolicy::class,
+        Models\ProduksiDetail::class => FilamentResourcePolicy::class,
+        Models\BahanBakuHistory::class => FilamentResourcePolicy::class,
+        Models\ProductDetail::class => InventoryStockPolicy::class,
+        Models\BahanBakuDetail::class => InventoryStockPolicy::class,
+        Models\Order::class => SalesPolicy::class,
+        Models\OrderDetail::class => SalesPolicy::class,
+        Models\Payment::class => SalesPolicy::class,
+        Models\PaymentDetail::class => SalesPolicy::class,
     ];
 
     /**
@@ -23,12 +41,5 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
-
-        // Register Filament Resource Policy
-        Gate::define('viewAny', [FilamentResourcePolicy::class, 'viewAny']);
-        Gate::define('view', [FilamentResourcePolicy::class, 'view']);
-        Gate::define('create', [FilamentResourcePolicy::class, 'create']);
-        Gate::define('update', [FilamentResourcePolicy::class, 'update']);
-        Gate::define('delete', [FilamentResourcePolicy::class, 'delete']);
     }
-} 
+}

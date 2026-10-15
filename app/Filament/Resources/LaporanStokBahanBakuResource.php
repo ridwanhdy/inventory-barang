@@ -4,13 +4,18 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LaporanStokBahanBakuResource\Pages;
 use App\Models\BahanBakuDetail;
-use Filament\Forms;
+use App\Support\ReportPeriod;
+use App\Support\StockPresentation;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Count;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 
 class LaporanStokBahanBakuResource extends Resource
@@ -18,10 +23,15 @@ class LaporanStokBahanBakuResource extends Resource
     protected static ?string $model = BahanBakuDetail::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
+
     protected static ?string $navigationLabel = 'Laporan Stok Bahan Baku';
+
     protected static ?string $modelLabel = 'Laporan Stok Bahan Baku';
+
     protected static ?string $pluralModelLabel = 'Laporan Stok Bahan Baku';
+
     protected static ?string $navigationGroup = 'Laporan';
+
     protected static ?int $navigationSort = 7;
 
     public static function form(Form $form): Form
@@ -32,30 +42,70 @@ class LaporanStokBahanBakuResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['bahanBaku.kategori', 'bahanBaku.satuan']))
+            ->searchPlaceholder('Cari nama atau kategori bahan baku')
+            ->striped()
             ->columns([
-                Tables\Columns\TextColumn::make('bahanBaku.nama_bahan')->label('Nama Bahan'),
-                Tables\Columns\TextColumn::make('bahanBaku.kategori.nama_kategori')->label('Kategori'),
-                Tables\Columns\TextColumn::make('bahanBaku.satuan.nama_satuan')->label('Satuan'),
-                Tables\Columns\TextColumn::make('stok')->label('Stok')
+                Tables\Columns\TextColumn::make('bahanBaku.nama_bahan')
+                    ->label('Bahan baku')
+                    ->weight(FontWeight::Medium)
+                    ->searchable()
+                    ->sortable()
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('bahanBaku.kategori.nama_kategori')
+                    ->label('Kategori')
+                    ->placeholder('Tanpa kategori')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('stok')
+                    ->label('Jumlah stok')
+                    ->formatStateUsing(fn ($state, BahanBakuDetail $record) => StockPresentation::quantity($state, $record->bahanBaku?->satuan?->nama_satuan))
+                    ->weight(FontWeight::SemiBold)
+                    ->sortable()
+                    ->summarize(Count::make()->label('Jumlah item')),
+                Tables\Columns\TextColumn::make('status_stok')
+                    ->label('Ketersediaan')
+                    ->getStateUsing(fn (BahanBakuDetail $record) => StockPresentation::status($record->stok, StockPresentation::minimum($record)))
                     ->badge()
-                    ->color(function ($state) {
-                        if ($state < 5) return 'danger';
-                        if ($state < 10) return 'warning';
-                        return 'success';
-                    }),
+                    ->color(fn (BahanBakuDetail $record) => StockPresentation::color($record->stok, StockPresentation::minimum($record))),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Pembaruan stok (WIB)')
+                    ->dateTime('d M Y, H:i')
+                    ->timezone('Asia/Jakarta')
+                    ->sortable(),
             ])
             ->defaultSort('stok', 'asc')
+            ->filters([
+                ReportPeriod::filter('updated_at'),
+                Tables\Filters\SelectFilter::make('kategori')
+                    ->relationship('bahanBaku.kategori', 'nama_kategori')
+                    ->label('Kategori')
+                    ->placeholder('Semua kategori')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\SelectFilter::make('status_stok')
+                    ->label('Ketersediaan')
+                    ->placeholder('Semua status')
+                    ->options(fn () => StockPresentation::statusOptions('bahan_baku_details'))
+                    ->query(fn (Builder $query, array $data) => StockPresentation::filter($query, $data['value'] ?? null)),
+            ], layout: FiltersLayout::AboveContent)
+            ->filtersFormColumns(3)
+            ->deferFilters()
+            ->filtersApplyAction(fn (Tables\Actions\Action $action) => $action->label('Terapkan filter')->icon('heroicon-o-funnel'))
             ->actions([
                 Tables\Actions\Action::make('cetak_pdf')
                     ->label('Cetak PDF')
                     ->icon('heroicon-o-printer')
                     ->action(function (BahanBakuDetail $record) {
+                        $record->loadMissing(['bahanBaku.kategori', 'bahanBaku.satuan']);
                         $pdf = Pdf::loadView('laporan.stok_bahan_baku.pdf', [
                             'details' => collect([$record]),
+                            'periodeLabel' => static::stockPeriodLabel(collect([$record])),
                         ]);
+
                         return response()->streamDownload(function () use ($pdf) {
                             echo $pdf->output();
-                        }, 'laporan-stok-bahan-baku-' . $record->id . '.pdf');
+                        }, 'laporan-stok-bahan-baku-'.$record->id.'.pdf');
                     }),
             ])
             ->bulkActions([
@@ -63,14 +113,34 @@ class LaporanStokBahanBakuResource extends Resource
                     ->label('Cetak PDF Terpilih')
                     ->icon('heroicon-o-printer')
                     ->action(function (Collection $records) {
+                        $records->loadMissing(['bahanBaku.kategori', 'bahanBaku.satuan']);
                         $pdf = Pdf::loadView('laporan.stok_bahan_baku.pdf', [
                             'details' => $records,
+                            'periodeLabel' => static::stockPeriodLabel($records),
                         ]);
+
                         return response()->streamDownload(function () use ($pdf) {
                             echo $pdf->output();
                         }, 'laporan-stok-bahan-baku.pdf');
-                    }),
-            ]);
+                    })
+                    ->deselectRecordsAfterCompletion(),
+            ])
+            ->emptyStateHeading('Tidak ada stok bahan baku untuk laporan ini')
+            ->emptyStateDescription('Ubah periode pembaruan stok, kategori, status, atau kata pencarian untuk menampilkan data.');
+    }
+
+    protected static function stockPeriodLabel(Collection $records): string
+    {
+        $dates = $records->pluck('updated_at')->filter();
+
+        if ($dates->isEmpty()) {
+            return 'Pembaruan stok: tanggal belum tercatat';
+        }
+
+        $start = Carbon::parse($dates->min())->timezone('Asia/Jakarta')->format('d/m/Y');
+        $end = Carbon::parse($dates->max())->timezone('Asia/Jakarta')->format('d/m/Y');
+
+        return 'Pembaruan stok: '.($start === $end ? $start : $start.' – '.$end);
     }
 
     public static function getPages(): array
@@ -82,7 +152,7 @@ class LaporanStokBahanBakuResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return true;
+        return static::canViewAny();
     }
 
     public static function canCreate(): bool

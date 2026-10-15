@@ -34,13 +34,14 @@ class BahanBakuDetailResource extends Resource
             ->schema([
                 Select::make('bahan_baku_id')
                     ->relationship('bahanBaku', 'nama_bahan')
+                    ->live()
                     ->required(),
-                Select::make('satuan_id')
-                    ->relationship('satuan', 'nama_satuan')
-                    ->required(),
-                Select::make('kategori_id')
-                    ->relationship('kategori', 'nama_kategori')
-                    ->required(),
+                Forms\Components\Placeholder::make('satuan')
+                    ->label('Satuan')
+                    ->content(fn (Forms\Get $get): string => \App\Models\BahanBaku::find($get('bahan_baku_id'))?->satuan?->nama_satuan ?? '—'),
+                Forms\Components\Placeholder::make('kategori')
+                    ->label('Kategori')
+                    ->content(fn (Forms\Get $get): string => \App\Models\BahanBaku::find($get('bahan_baku_id'))?->kategori?->nama_kategori ?? '—'),
                 TextInput::make('stok')->numeric()->step(0.01)->required(),
             ]);
     }
@@ -124,6 +125,6 @@ class BahanBakuDetailResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->role === 'admin';
+        return static::canViewAny();
     }
 }
