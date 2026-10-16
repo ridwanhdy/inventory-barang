@@ -22,7 +22,9 @@ class ProductDetailResource extends Resource
     protected static ?string $modelLabel = 'Stok Produk Jadi';
     protected static ?string $pluralModelLabel = 'Stok Produk Jadi';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+
+    protected static ?string $activeNavigationIcon = 'heroicon-s-archive-box';
 
     protected static ?string $navigationLabel = 'Stok Produk Jadi';
     protected static ?int $navigationSort = 4;

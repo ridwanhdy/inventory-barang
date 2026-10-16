@@ -83,16 +83,13 @@ class ViewBahanBakuDetail extends ViewRecord
                     ->schema([
                         Infolists\Components\TextEntry::make('bahanBaku.nama_bahan')
                             ->label('Nama bahan baku')
+                            ->columnSpanFull()
                             ->placeholder('—'),
                         Infolists\Components\TextEntry::make('bahanBaku.kategori.nama_kategori')
                             ->label('Kategori')
                             ->placeholder('—'),
                         Infolists\Components\TextEntry::make('bahanBaku.satuan.nama_satuan')
                             ->label('Satuan')
-                            ->placeholder('—'),
-                        Infolists\Components\TextEntry::make('bahanBaku.jenis')
-                            ->label('Jenis')
-                            ->formatStateUsing(fn (string $state): string => ucfirst($state))
                             ->placeholder('—'),
                     ])
                     ->columns(2),

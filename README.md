@@ -78,10 +78,24 @@ php artisan key:generate
 php artisan migrate --seed
 
 # 6. Jalankan
-php artisan serve
+php artisan serve:fast
 ```
 
 Akses: [http://localhost:8000/admin](http://localhost:8000/admin)
+
+`serve:fast` memakai server Laravel dengan OPcache khusus proses aplikasi ini jika ekstensi tersedia. Perubahan file PHP tetap diperiksa pada setiap request. Konfigurasi PHP global XAMPP tidak perlu diubah; `php artisan serve` tetap tersedia.
+
+### Mempercepat menu Filament
+
+Navigasi panel memakai SPA Livewire, font Poppins disajikan lokal, dan widget dashboard dimuat setelah halaman tampil. Query daftar master dan penjualan memakai agregasi database sehingga tidak menjalankan query terpisah untuk setiap baris. Stok dan pembayaran tetap dibaca langsung dari database.
+
+Setelah instalasi atau perubahan resource, route, dan tampilan, buat ulang cache aplikasi:
+
+```bash
+composer optimize
+```
+
+Sebelum mengubah konfigurasi `.env`, menambah resource/halaman, atau bila perubahan belum terlihat, bersihkan cache dengan `composer optimize:clear`. Setelah selesai mengubah kode, jalankan kembali `composer optimize`. Jalankan pengujian melalui `composer test` agar cache konfigurasi tidak mengabaikan database SQLite khusus pengujian.
 
 | Peran | Email | Password |
 |---|---|---|

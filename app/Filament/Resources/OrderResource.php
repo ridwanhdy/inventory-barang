@@ -26,6 +26,8 @@ class OrderResource extends Resource
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
+    protected static ?string $activeNavigationIcon = 'heroicon-s-shopping-cart';
+
     public static function canViewAny(): bool
     {
         return in_array(auth()->user()?->role, ['admin', 'kasir'], true);
@@ -136,7 +138,10 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['orderDetails.product', 'payments']))
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->withSum('orderDetails', 'subtotal')
+                ->withSum('payments', 'jumlah_bayar')
+                ->withSum('payments', 'kembalian'))
             ->searchPlaceholder('Cari nomor atau pelanggan')->defaultSort('tanggal_order', 'desc')->striped()
             ->columns([
                 Tables\Columns\TextColumn::make('no_transaksi')
@@ -144,7 +149,7 @@ class OrderResource extends Resource
                     ->description(fn (Order $record): string => $record->nama_customer)
                     ->searchable(query: fn (Builder $query, string $search) => $query->where('no_transaksi', 'like', "%{$search}%")->orWhere('nama_customer', 'like', "%{$search}%")),
                 Tables\Columns\TextColumn::make('total_harga')
-                    ->label('Total')->getStateUsing(fn (Order $record) => $record->orderDetails->sum('subtotal'))
+                    ->label('Total')->getStateUsing(fn (Order $record): float => (float) $record->order_details_sum_subtotal)
                     ->formatStateUsing(fn ($state): string => static::rupiah($state)),
                 Tables\Columns\TextColumn::make('status_pembayaran')
                     ->label('Pembayaran')->badge()
@@ -155,7 +160,9 @@ class OrderResource extends Resource
                         'lunas' => 'success', 'cicilan' => 'warning', default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('sisa_tagihan')
-                    ->label('Sisa tagihan')->getStateUsing(fn (Order $record): float => $record->remainingAmount())
+                    ->label('Sisa tagihan')->getStateUsing(fn (Order $record): float => $record->status_transaksi === 'batal'
+                        ? 0.0
+                        : max(0, (float) $record->order_details_sum_subtotal - max(0, (float) $record->payments_sum_jumlah_bayar - (float) $record->payments_sum_kembalian)))
                     ->formatStateUsing(fn ($state): string => static::rupiah($state)),
                 Tables\Columns\TextColumn::make('status_transaksi')
                     ->label('Barang')->badge()

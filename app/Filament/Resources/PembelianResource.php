@@ -23,7 +23,9 @@ class PembelianResource extends Resource
     protected static ?string $navigationLabel = 'Penerimaan Bahan Baku';
     protected static ?string $navigationGroup = 'Transaksi';
     protected static ?int $navigationSort = 5;
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
+    protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
+
+    protected static ?string $activeNavigationIcon = 'heroicon-s-inbox-arrow-down';
 
     public static function canViewAny(): bool
     {

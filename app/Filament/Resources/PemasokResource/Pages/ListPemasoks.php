@@ -10,10 +10,20 @@ class ListPemasoks extends ListRecords
 {
     protected static string $resource = PemasokResource::class;
 
+    public function boot(): void
+    {
+        app()->setLocale('id');
+    }
+
+    public function getSubheading(): string
+    {
+        return 'Kelola kontak dan alamat pemasok serta telusuri riwayat penerimaan bahan baku dari setiap mitra.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('Tambah pemasok'),
         ];
     }
 }

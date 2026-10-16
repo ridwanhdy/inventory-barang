@@ -74,7 +74,16 @@
     }
 
     .fi-panel-admin .fi-sidebar .fi-sidebar-item-icon {
-        color: #AEBBD5;
+        box-sizing: border-box;
+        width: 1.75rem;
+        height: 1.75rem;
+        flex-shrink: 0;
+        padding: .3rem;
+        border-radius: .5rem;
+        color: #C7D4EE;
+        background-color: rgb(252 241 208 / .07);
+        box-shadow: inset 0 0 0 1px rgb(252 241 208 / .08);
+        transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
     }
 
     .fi-panel-admin .fi-sidebar-item:not(.fi-active) > .fi-sidebar-item-button:is(:hover, :focus-visible),
@@ -82,14 +91,31 @@
         background-color: var(--inv-blue);
     }
 
+    .fi-panel-admin .fi-sidebar-item:not(.fi-active) > .fi-sidebar-item-button:is(:hover, :focus-visible) .fi-sidebar-item-icon {
+        color: var(--inv-cream);
+        background-color: rgb(252 241 208 / .14);
+        box-shadow: inset 0 0 0 1px rgb(252 241 208 / .18);
+    }
+
     .fi-panel-admin .fi-sidebar-item.fi-active > .fi-sidebar-item-button {
         background-color: var(--inv-cream);
         box-shadow: inset 3px 0 #D5BC7E;
     }
 
-    .fi-panel-admin .fi-sidebar-item.fi-active > .fi-sidebar-item-button .fi-sidebar-item-label,
-    .fi-panel-admin .fi-sidebar-item.fi-active > .fi-sidebar-item-button .fi-sidebar-item-icon {
+    .fi-panel-admin .fi-sidebar-item.fi-active > .fi-sidebar-item-button .fi-sidebar-item-label {
         color: var(--inv-navy);
+    }
+
+    .fi-panel-admin .fi-sidebar-item.fi-active > .fi-sidebar-item-button .fi-sidebar-item-icon {
+        color: var(--inv-cream);
+        background-color: var(--inv-navy);
+        box-shadow: 0 2px 5px rgb(1 7 54 / .16);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .fi-panel-admin .fi-sidebar .fi-sidebar-item-icon {
+            transition: none;
+        }
     }
 
     .fi-panel-admin .fi-sidebar .fi-sidebar-item-button:focus-visible {

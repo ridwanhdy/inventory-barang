@@ -10,24 +10,44 @@ class EditSatuan extends EditRecord
 {
     protected static string $resource = SatuanResource::class;
 
+    public function boot(): void
+    {
+        app()->setLocale('id');
+    }
+
+    public function getTitle(): string
+    {
+        return 'Ubah Satuan';
+    }
+
+    public function getSubheading(): string
+    {
+        return 'Perbarui nama satuan agar pengukuran bahan baku dan produk seragam. Satuan yang sedang digunakan tidak dapat dihapus.';
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Satuan berhasil diperbarui';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Hapus')
+                ->modalHeading('Hapus satuan')
+                ->modalDescription('Satuan yang belum digunakan akan dihapus. Satuan yang digunakan bahan baku atau produk dilindungi dari penghapusan.')
+                ->modalSubmitActionLabel('Ya, hapus satuan'),
         ];
     }
 
     protected function getFormActions(): array
     {
         return [
-            Actions\Action::make('save')
-                ->label('Simpan')
-                ->submit('save')
-                ->keyBindings(['mod+s']),
-            Actions\Action::make('cancel')
-                ->label('Batal')
-                ->url(fn () => $this->getResource()::getUrl())
-                ->color('gray'),
+            $this->getSaveFormAction()->label('Simpan'),
+            $this->getCancelFormAction()->label('Batal')
+                ->alpineClickHandler(null)
+                ->url($this->getResource()::getUrl()),
         ];
     }
 }

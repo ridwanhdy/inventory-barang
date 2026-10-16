@@ -56,7 +56,15 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve:fast\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
+        ],
+        "optimize": [
+            "@php artisan optimize",
+            "@php artisan filament:optimize"
+        ],
+        "optimize:clear": [
+            "@php artisan optimize:clear",
+            "@php artisan filament:optimize-clear"
         ],
         "test": [
             "@php artisan config:clear --ansi",

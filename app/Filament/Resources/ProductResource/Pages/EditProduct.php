@@ -10,6 +10,11 @@ class EditProduct extends EditRecord
 {
     protected static string $resource = ProductResource::class;
 
+    public function getSubheading(): ?string
+    {
+        return 'Perbarui identitas, varian, harga jual, dan foto produk agar katalog tetap sesuai dengan produk yang dijual.';
+    }
+
     public function boot(): void
     {
         app()->setLocale('id');
@@ -18,7 +23,12 @@ class EditProduct extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Hapus')
+                ->modalHeading('Hapus produk')
+                ->modalDescription('Produk yang belum digunakan akan dihapus. Tindakan ini tidak dapat dibatalkan.')
+                ->modalSubmitActionLabel('Hapus produk')
+                ->modalCancelActionLabel('Batal'),
         ];
     }
 
@@ -26,7 +36,7 @@ class EditProduct extends EditRecord
     {
         return [
             Actions\Action::make('save')
-                ->label('Simpan')
+                ->label('Simpan perubahan')
                 ->submit('save')
                 ->keyBindings(['mod+s']),
             Actions\Action::make('cancel')
@@ -42,5 +52,4 @@ class EditProduct extends EditRecord
 
         return $data;
     }
-
 }

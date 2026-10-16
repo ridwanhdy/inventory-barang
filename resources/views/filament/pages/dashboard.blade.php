@@ -16,24 +16,24 @@
 
             <div class="inv-hero-actions">
                 @if (\App\Filament\Resources\OrderResource::canCreate())
-                    <a href="{{ \App\Filament\Resources\OrderResource::getUrl('create') }}" class="inv-hero-action inv-hero-action-primary">
+                    <a href="{{ \App\Filament\Resources\OrderResource::getUrl('create') }}" wire:navigate class="inv-hero-action inv-hero-action-primary">
                         <x-filament::icon icon="heroicon-o-plus" class="inv-icon" />
                         Buat penjualan
                     </a>
                 @elseif (\App\Filament\Resources\OrderResource::canViewAny())
-                    <a href="{{ \App\Filament\Resources\OrderResource::getUrl() }}" class="inv-hero-action inv-hero-action-primary">
+                    <a href="{{ \App\Filament\Resources\OrderResource::getUrl() }}" wire:navigate class="inv-hero-action inv-hero-action-primary">
                         <x-filament::icon icon="heroicon-o-shopping-bag" class="inv-icon" />
                         Lihat penjualan
                     </a>
                 @endif
 
                 @if (\App\Filament\Resources\ProductResource::canViewAny())
-                    <a href="{{ \App\Filament\Resources\ProductResource::getUrl() }}" class="inv-hero-action">
+                    <a href="{{ \App\Filament\Resources\ProductResource::getUrl() }}" wire:navigate class="inv-hero-action">
                         <x-filament::icon icon="heroicon-o-cube" class="inv-icon" />
                         Lihat produk
                     </a>
                 @elseif (\App\Filament\Resources\ProductDetailResource::canViewAny())
-                    <a href="{{ \App\Filament\Resources\ProductDetailResource::getUrl() }}" class="inv-hero-action">
+                    <a href="{{ \App\Filament\Resources\ProductDetailResource::getUrl() }}" wire:navigate class="inv-hero-action">
                         <x-filament::icon icon="heroicon-o-cube" class="inv-icon" />
                         Lihat stok produk
                     </a>

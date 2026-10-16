@@ -12,6 +12,16 @@ class ListSatuans extends ListRecords
 
     protected ?string $heading = 'Satuan';
 
+    public function boot(): void
+    {
+        app()->setLocale('id');
+    }
+
+    public function getSubheading(): string
+    {
+        return 'Kelola satuan pengukuran bahan baku dan produk agar pencatatan jumlah dan stok tetap konsisten.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

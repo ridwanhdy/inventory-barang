@@ -13,6 +13,11 @@ class Pemasok extends Model
         'alamat',
     ];
 
+    public function pembelians(): HasMany
+    {
+        return $this->hasMany(Pembelian::class);
+    }
+
     public function bahanBakus(): HasMany
     {
         return $this->hasMany(BahanBaku::class);

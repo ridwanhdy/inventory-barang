@@ -12,6 +12,16 @@ class ListBahanBakus extends ListRecords
 
     protected ?string $heading = 'Bahan Baku';
 
+    public function boot(): void
+    {
+        app()->setLocale('id');
+    }
+
+    public function getSubheading(): string
+    {
+        return 'Kelola identitas, kategori, dan satuan bahan yang digunakan dalam penerimaan serta produksi.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

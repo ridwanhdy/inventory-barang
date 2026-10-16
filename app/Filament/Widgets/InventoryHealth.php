@@ -16,7 +16,7 @@ class InventoryHealth extends Widget
 
     protected static ?int $sort = 3;
 
-    protected static bool $isLazy = false;
+    protected static bool $isLazy = true;
 
     protected int|string|array $columnSpan = ['default' => 1, 'xl' => 1];
 
@@ -36,23 +36,22 @@ class InventoryHealth extends Widget
             ->groupBy('bahan_baku_id');
 
         if ($hasMinimum) {
-            $stockQuery
-                ->selectRaw('MAX(stok_minimal) AS stok_minimal')
-                ->havingRaw('SUM(stok) <= MAX(stok_minimal)');
+            $stockQuery->selectRaw('MAX(stok_minimal) AS stok_minimal');
         } else {
-            $stockQuery->havingRaw('SUM(stok) <= ?', [0]);
+            $stockQuery->selectRaw('0 AS stok_minimal');
         }
+
+        $summary = DB::query()
+            ->fromSub((clone $stockQuery)->toBase(), 'monitored_stock')
+            ->selectRaw('COUNT(*) AS total, COUNT(CASE WHEN stok <= stok_minimal THEN 1 END) AS low_stock')
+            ->first();
 
         return [
             'hasMinimum' => $hasMinimum,
-            'totalMaterials' => BahanBakuDetail::query()
-                ->whereHas('bahanBaku')
-                ->distinct()
-                ->count('bahan_baku_id'),
-            'lowStockCount' => DB::query()
-                ->fromSub((clone $stockQuery)->toBase(), 'monitored_stock')
-                ->count(),
+            'totalMaterials' => (int) $summary->total,
+            'lowStockCount' => (int) $summary->low_stock,
             'materials' => $stockQuery
+                ->havingRaw($hasMinimum ? 'SUM(stok) <= MAX(stok_minimal)' : 'SUM(stok) <= 0')
                 ->with('bahanBaku.satuan')
                 ->orderBy('stok')
                 ->orderBy('bahan_baku_id')

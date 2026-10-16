@@ -75,7 +75,7 @@
                     @endif
                 </div>
                 @if ($stockUrl)
-                    <a href="{{ $stockUrl }}" class="inv-stock-link">
+                    <a href="{{ $stockUrl }}" wire:navigate class="inv-stock-link">
                         Lihat stok
                         <x-filament::icon icon="heroicon-m-arrow-up-right" class="inv-stock-link-icon" />
                     </a>

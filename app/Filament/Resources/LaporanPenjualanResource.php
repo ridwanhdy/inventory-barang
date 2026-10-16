@@ -22,7 +22,9 @@ class LaporanPenjualanResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
+    protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
+
+    protected static ?string $activeNavigationIcon = 'heroicon-s-chart-bar-square';
 
     protected static ?string $navigationLabel = 'Laporan Penjualan';
 

@@ -8,6 +8,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use App\Filament\Pages\Dashboard;
 use Filament\Enums\ThemeMode;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -31,12 +32,13 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->spa()
             ->brandName('Inventory Barang')
             ->login()
             ->databaseTransactions()
             ->darkMode(false)
             ->defaultThemeMode(ThemeMode::Light)
-            ->font('Poppins')
+            ->font('Poppins', url: asset('fonts/poppins/poppins.css'), provider: LocalFontProvider::class)
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => view('filament.partials.readable-fonts'),

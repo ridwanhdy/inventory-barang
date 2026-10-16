@@ -26,7 +26,9 @@ class BahanBakuDetailResource extends Resource
     protected static ?string $navigationLabel = 'Stok Bahan Baku';
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationGroup = 'Stok';
-    protected static ?string $navigationIcon = 'heroicon-o-cube';
+    protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
+
+    protected static ?string $activeNavigationIcon = 'heroicon-s-circle-stack';
 
     public static function form(Form $form): Form
     {

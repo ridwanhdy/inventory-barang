@@ -11,7 +11,9 @@ use Filament\Support\Enums\MaxWidth;
 
 class Dashboard extends BasePage
 {
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
+
+    protected static ?string $activeNavigationIcon = 'heroicon-s-squares-2x2';
 
     protected static ?string $navigationLabel = 'Dashboard';
 

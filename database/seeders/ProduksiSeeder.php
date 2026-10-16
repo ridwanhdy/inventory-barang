@@ -31,10 +31,13 @@ class ProduksiSeeder extends Seeder
         }
         $materials = BahanBaku::query()->get()->keyBy('nama_bahan');
 
-        // Each size/color/fabric combination has its own accepted production output.
-        foreach ($products as $index => $product) {
-            $day = (int) floor($index * 28 / $products->count());
-            $this->seedBatch($product, $materials, $day, 20 + ($index % 11), $index, 'SELESAI');
+        // Three sample batches per day keep the monthly demo quick to seed.
+        for ($day = 0; $day < 30; $day++) {
+            for ($slot = 0; $slot < 3; $slot++) {
+                $index = $day * 3 + $slot;
+                $product = $products[(int) floor($index * $products->count() / 90)];
+                $this->seedBatch($product, $materials, $day, 20 + ($index % 11), $index, 'SELESAI');
+            }
         }
 
         // Keep activity on the last two dates, with examples of every lifecycle state.

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Product;
 use App\Support\DashboardMetrics;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -11,7 +10,7 @@ class StatsOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
 
-    protected static bool $isLazy = false;
+    protected static bool $isLazy = true;
 
     protected static ?string $pollingInterval = '60s';
 
@@ -25,9 +24,9 @@ class StatsOverview extends BaseWidget
         $salesTrend = $this->trend($current['sales'], $previous['sales']);
         $ordersTrend = $this->trend($current['orders'], $previous['orders']);
 
-        $stocks = Product::query()->select(['id'])->withSum('details', 'stok')->get();
-        $availableProducts = $stocks->filter(fn (Product $product): bool => (float) $product->details_sum_stok > 0)->count();
-        $emptyProducts = $stocks->count() - $availableProducts;
+        $stocks = DashboardMetrics::productStockSummary();
+        $availableProducts = $stocks['available'];
+        $emptyProducts = $stocks['total'] - $availableProducts;
         $remaining = DashboardMetrics::outstandingPayments();
 
         return [
@@ -51,7 +50,7 @@ class StatsOverview extends BaseWidget
 
             Stat::make('Produk tersedia', number_format($availableProducts, 0, ',', '.'))
                 ->icon('heroicon-o-cube')
-                ->description($stocks->isEmpty() ? 'Belum ada produk' : ($emptyProducts > 0 ? number_format($emptyProducts, 0, ',', '.').' produk kehabisan stok' : 'Semua produk memiliki stok'))
+                ->description($stocks['total'] === 0 ? 'Belum ada produk' : ($emptyProducts > 0 ? number_format($emptyProducts, 0, ',', '.').' produk kehabisan stok' : 'Semua produk memiliki stok'))
                 ->descriptionIcon($emptyProducts > 0 ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-check-circle')
                 ->color($emptyProducts > 0 ? 'warning' : 'success')
                 ->extraAttributes(['class' => 'inv-stat inv-stat--stock']),

@@ -14,7 +14,7 @@ class OrderPerMonth extends ChartWidget
 
     protected static ?int $sort = 2;
 
-    protected static bool $isLazy = false;
+    protected static bool $isLazy = true;
 
     protected static ?string $maxHeight = '260px';
 

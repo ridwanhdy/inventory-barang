@@ -22,7 +22,9 @@ class LaporanStokBahanBakuResource extends Resource
 {
     protected static ?string $model = BahanBakuDetail::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static ?string $activeNavigationIcon = 'heroicon-s-clipboard-document-list';
 
     protected static ?string $navigationLabel = 'Laporan Stok Bahan Baku';
 

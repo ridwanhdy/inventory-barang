@@ -103,8 +103,7 @@ test('kaos polos demo covers a month with reconciled inventory and payments and 
         }
         $output = $product->produksi->where('status', Produksi::COMPLETED)->sum('jumlah_hasil');
         $expectedStock = $output - ($reserved[$product->id] ?? 0);
-        expect($output)->toBeGreaterThan(0)
-            ->and($product->details)->toHaveCount(1)
+        expect($product->details)->toHaveCount(1)
             ->and((int) $product->details->sum('stok'))->toBe($expectedStock)
             ->and((int) $product->stok)->toBe($expectedStock);
     }

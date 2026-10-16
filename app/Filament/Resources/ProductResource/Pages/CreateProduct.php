@@ -3,12 +3,16 @@
 namespace App\Filament\Resources\ProductResource\Pages;
 
 use App\Filament\Resources\ProductResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
+
+    public function getSubheading(): ?string
+    {
+        return 'Tambahkan identitas produk, varian, harga jual per satuan, dan foto produk bila tersedia.';
+    }
 
     public function boot(): void
     {
@@ -25,10 +29,9 @@ class CreateProduct extends CreateRecord
     protected function getFormActions(): array
     {
         return [
-            $this->getCreateFormAction()->label('Tambah'),
-            ...(static::canCreateAnother() ? [$this->getCreateAnotherFormAction()->label("Tambah & Tambah Lainnya")] : []),
+            $this->getCreateFormAction()->label('Tambah produk'),
+            ...(static::canCreateAnother() ? [$this->getCreateAnotherFormAction()->label('Tambah & tambah lainnya')] : []),
             $this->getCancelFormAction()->label('Batal'),
         ];
     }
-
 }

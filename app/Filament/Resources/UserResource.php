@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use App\Support\MasterDataUsage;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -27,6 +28,8 @@ class UserResource extends Resource
     protected static ?int $navigationSort = 6;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+
+    protected static ?string $activeNavigationIcon = 'heroicon-s-users';
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -75,7 +78,7 @@ class UserResource extends Resource
     {
         return auth()->user()?->role === 'admin'
             && ! $record->is(auth()->user())
-            && ! MasterDataUsage::isUsed($record);
+            && ! MasterDataUsage::isUsedForDisplay($record);
     }
 
     public static function canDeleteAny(): bool
@@ -86,6 +89,7 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => MasterDataUsage::withUsage($query))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')

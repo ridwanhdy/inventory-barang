@@ -12,6 +12,16 @@ class ListKategoris extends ListRecords
 
     protected ?string $heading = 'Kategori';
 
+    public function boot(): void
+    {
+        app()->setLocale('id');
+    }
+
+    public function getSubheading(): string
+    {
+        return 'Kelola pengelompokan bahan baku dan produk, serta lihat jumlah data yang memakai setiap kategori.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
