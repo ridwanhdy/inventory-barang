@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Order;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Database\Seeders\Support\DemoPeriod;
 use Illuminate\Database\Seeder;
@@ -31,7 +32,9 @@ class PaymentSeeder extends Seeder
                         return;
                     }
 
-                    $paidAt = $order->created_at->toImmutable()->setTimezone('Asia/Jakarta')->addMinutes(20);
+                    // Parse stored timestamps in the app timezone, independently of the demo clock.
+                    $paidAt = CarbonImmutable::parse($order->getRawOriginal('created_at'), config('app.timezone'))
+                        ->setTimezone('Asia/Jakarta')->addMinutes(20);
                     $completedAt = $paidAt->addMinutes(10);
 
                     // Eight repeating scenarios keep all transaction and payment

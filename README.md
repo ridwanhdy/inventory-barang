@@ -48,10 +48,10 @@ ProductDetail   → stok barang jadi
 
 ## Requirement
 
-- PHP 8.2+
-- Composer
-- MySQL
-- Node.js & npm (opsional, untuk Vite)
+- PHP **8.2, 8.3, atau 8.4**, sesuai dependency pada `composer.lock`.
+- Composer 2, Git, dan MySQL/MariaDB (misalnya bawaan XAMPP).
+- Ekstensi PHP sesuai `composer check-platform-reqs`, termasuk `pdo_mysql`, `intl`, `zip`, `fileinfo`, `dom`, dan `xml`. Pengujian juga memerlukan `pdo_sqlite`.
+- Node.js & npm opsional untuk Vite atau `composer dev`; panel Filament dapat dijalankan tanpa npm.
 
 ---
 
@@ -65,23 +65,49 @@ cd inventory-barang
 # 2. Install dependency
 composer install
 
-# 3. Environment
-copy .env.example .env
+# 3. Environment (Windows, Linux, dan macOS)
+php -r "file_exists('.env') || copy('.env.example', '.env');"
 php artisan key:generate
+```
 
-# 4. Sesuaikan database di .env
-# DB_DATABASE=inventory_barang
-# DB_USERNAME=root
-# DB_PASSWORD=
+Nyalakan MySQL, lalu buat database kosong melalui phpMyAdmin (tab **SQL**) atau klien MySQL:
 
-# 5. Migrasi + seeder
+```sql
+CREATE DATABASE IF NOT EXISTS inventory_barang
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+Sesuaikan `.env` dengan akun dan port MySQL pada laptop tujuan:
+
+```dotenv
+APP_URL=http://127.0.0.1:8000
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=inventory_barang
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+```bash
+# 4. Periksa kebutuhan PHP, lalu siapkan tabel dan data demo
+composer check-platform-reqs
+php artisan config:clear
 php artisan migrate --seed
 
-# 6. Jalankan
+# 5. Hubungkan folder foto dan bangun cache
+php artisan storage:link
+composer optimize
+
+# 6. Jalankan aplikasi
 php artisan serve:fast
 ```
 
-Akses: [http://localhost:8000/admin](http://localhost:8000/admin)
+Akses: [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin). Gunakan alamat yang sama dengan `APP_URL` agar URL foto dan sesi sesuai.
+
+File `.env`, `vendor`, cache, dan database laptop lama tidak diperlukan untuk instalasi baru. Foto upload lama perlu dipindahkan terpisah dari `storage/app/public` bila ingin dibawa; data demo memakai gambar pengganti yang tersedia dalam repository. Folder `storage` dan `bootstrap/cache` harus dapat ditulis.
+
+Jika muncul `could not find driver`, aktifkan `pdo_mysql` pada PHP terminal. Periksa file konfigurasi PHP yang benar dengan `php --ini`. Jika foto upload tidak tampil, periksa hasil `php artisan storage:link`. Gunakan `composer install` agar versi dependency mengikuti lock file.
 
 `serve:fast` memakai server Laravel dengan OPcache khusus proses aplikasi ini jika ekstensi tersedia. Perubahan file PHP tetap diperiksa pada setiap request. Konfigurasi PHP global XAMPP tidak perlu diubah; `php artisan serve` tetap tersedia.
 
